@@ -50,7 +50,7 @@ class Model:
         """
         pass
 
-    def add_nodal_output(self, node, var, data):
+    def add_nodal_output(self, node, var, data, step=1, inc=1):
         """Add nodal output results
 
         Parameters
@@ -63,10 +63,13 @@ class Model:
             Value of the output
 
         """
-        if var not in self.nodal_output:
-            self.nodal_output[var] = dict()
+        curr_step = self._curr_out_step
+        curr_inc = self._curr_incr
 
-        self.nodal_output[var][node] = data
+        if var not in self.nodal_output[curr_step][curr_inc]:
+            self.nodal_output[curr_step][curr_inc][var] = dict()
+
+        self.nodal_output[step][inc][var][node] = data
 
     def add_step(self, n, data):
         """Add a new step to the output database
@@ -86,17 +89,28 @@ class Model:
         # Add step to model
         if n not in self.steps:
             self.steps[n] = Step(self, n, data)
+
+            inc_n = data["increment number"]
+            self._curr_out_step = n
+            self._curr_incr = inc_n
+            # Initialize output repository for the current increment in step
+            self.nodal_output[n] = {inc_n: dict()}
         # Add increment to step
         else:
             step_time = data["step time"]
             load_prop = data["load proportionality"]
             time_inc = data["time increment"]
-            inc = data["increment number"]
+            inc_n = data["increment number"]
 
-            self.steps[n].add_increment(inc, time_inc, step_time, load_prop)
+            # Initialize output repository for the current increment in step
+            self.nodal_output[n][inc_n] = dict()
 
+            self._curr_out_step = data["step number"]
+            self._curr_incr = data["increment number"]
 
-    def get_nodal_result(self, var):
+            self.steps[n].add_increment(inc_n, time_inc, step_time, load_prop)
+
+    def get_nodal_result(self, var, step, inc):
         """Get nodal results
 
         Parameters
@@ -108,10 +122,10 @@ class Model:
         TODO
 
         """
-        # FIXME: have this variable sorted
+        # FIXME: have this variable sorted globally
         keys = sorted(list(self.nodes.keys()))
 
-        results = self.nodal_output[var]
+        results = self.nodal_output[step][inc][var]
 
         list_res = [results[k] for k in keys]
 
