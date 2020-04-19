@@ -155,10 +155,11 @@ class Model:
         """
         # FIXME: have this variable sorted globally
         keys = sorted(list(self.elements.keys()))
+        keys_out = self.elem_output[step][inc][var].keys()
 
         results = self.elem_output[step][inc][var]
 
-        list_res = [results[k] for k in keys]
+        list_res = [results[k] if k in keys_out else np.nan for k in keys]
 
         return np.array(list_res)
 
@@ -473,7 +474,18 @@ class Hexahedron(Element):
         self._elem_type = vtk.VTK_PYRAMID
 
 
+class LineElement(Element):
+    """2 node pyramid element."""
+
+    def __init__(self, n1, n2, num, model):
+        super().__init__(num, model)
+        self._n_nodes = 2
+        self._nodes = [n1, n2]
+        self._elem_type = vtk.VTK_LINE
+
 ELEMENTS = {
+    # 1D- Rigid
+    "R2D2": LineElement,
     # 2D Continuum
     "S4R": Quad,
     "CPS4R": Quad,

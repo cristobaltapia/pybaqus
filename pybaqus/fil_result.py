@@ -129,7 +129,7 @@ class FilResult:
         if len(coords) == 2:
             node = Node2D(*coords, num=n_number, model=self.model)
         else:
-            node = Node3D(*coords, num=n_number, model=self.model)
+            node = Node3D(*coords[:3], num=n_number, model=self.model)
 
         self.model.add_node(node)
 
