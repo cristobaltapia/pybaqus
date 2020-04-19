@@ -23,7 +23,10 @@ class FilResult:
             1: ("_parse_elem_header", ),
             21: ("_parse_elem_output", ),
             101: ("_parse_nodal_output", ["U"]),
+            104: ("_parse_nodal_output", ["RF"]),
+            106: ("_parse_nodal_output", ["CF"]),
             107: ("_parse_nodal_output", ["COORD"]),
+            146: ("_parse_nodal_output", ["TF"]),
             1900: ("_parse_element", ),
             1901: ("_parse_node", ),
             2000: ("_parse_step", ),
@@ -74,10 +77,10 @@ class FilResult:
             key = vars_i[1]
             # Lookup the key in dictionary and execute the respective functions
             if key in self.PARSE_MAP:
-                if key == 107:
+                try:
                     args = self.PARSE_MAP[key][1]
                     getattr(self, self.PARSE_MAP[key][0])(vars_i, *args)
-                else:
+                except:
                     getattr(self, self.PARSE_MAP[key][0])(vars_i)
             # else:
             #     print(f"Key {key} not defined!")
