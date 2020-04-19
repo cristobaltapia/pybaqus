@@ -373,47 +373,94 @@ class Element:
 
         return nodes
 
-    def _get_cell_plane4(self):
-        """Generate cell from the node information.
-        """
+    def get_cell(self):
         # Get nodes
         nodes = np.array(self._nodes) - 1
 
-        cell = np.array([len(nodes), *nodes], dtype=int)
+        cell = np.array([self._n_nodes, *nodes], dtype=int)
 
         return cell
 
 
-class ES4R(Element):
-    """Element S4R"""
+class Quad(Element):
+    """4-node rectangular element."""
 
     def __init__(self, n1, n2, n3, n4, num, model):
-        Element.__init__(self, num, model)
+        super().__init__(num, model)
         self._n_nodes = 4
         self._nodes = [n1, n2, n3, n4]
-        self._connectivity = [0, 1, 2, 3]
         self._elem_type = vtk.VTK_QUAD
 
-    def get_cell(self):
-        return self._get_cell_plane4()
+
+class Triangle(Element):
+    """3-node triangular element."""
+
+    def __init__(self, n1, n2, n3, num, model):
+        super().__init__(num, model)
+        self._n_nodes = 3
+        self._nodes = [n1, n2, n3]
+        self._elem_type = vtk.VTK_TRIANGLE
 
 
-class ECPS4R(Element):
-    """Element S4R"""
+class Tetra(Element):
+    """4 node tetrahedron elements"""
 
     def __init__(self, n1, n2, n3, n4, num, model):
-        Element.__init__(self, num, model)
+        super().__init__(num, model)
         self._n_nodes = 4
         self._nodes = [n1, n2, n3, n4]
-        self._connectivity = [0, 1, 2, 3]
-        self._elem_type = vtk.VTK_QUAD
+        self._elem_type = vtk.VTK_TETRA
 
-    def get_cell(self):
-        return self._get_cell_plane4()
+
+class Pyramid(Element):
+    """5 node pyramid element."""
+
+    def __init__(self, n1, n2, n3, n4, n5, num, model):
+        super().__init__(num, model)
+        self._n_nodes = 5
+        self._nodes = [n1, n2, n3, n4, n5]
+        self._elem_type = vtk.VTK_PYRAMID
+
+
+class Wedge(Element):
+    """6 node triangular prism element."""
+
+    def __init__(self, n1, n2, n3, n4, n5, n6, num, model):
+        super().__init__(num, model)
+        self._n_nodes = 6
+        self._nodes = [n1, n2, n3, n4, n5, n6]
+        self._elem_type = vtk.VTK_WEDGE
+
+
+class Hexahedron(Element):
+    """8 node brick element."""
+
+    def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, num, model):
+        super().__init__(num, model)
+        self._n_nodes = 8
+        self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8]
+        self._elem_type = vtk.VTK_PYRAMID
 
 
 ELEMENTS = {
-    "S4R": ES4R,
-    "CPS4R": ECPS4R,
+    # 2D Continuum
+    "S4R": Quad,
+    "CPS4R": Quad,
+    "CPE3": Triangle,
+    "CPE3H": Triangle,
+    "CPS3": Triangle,
+    "CPEG3": Triangle,
+    # 3D Continuum
+    "C3D4": Tetra,
+    "C3D4H": Tetra,
+    "C3D5": Pyramid,
+    "C3D6": Wedge,
+    "C3D6H": Wedge,
+    "C3D8": Hexahedron,
+    "C3D8H": Hexahedron,
+    "C3D8I": Hexahedron,
+    "C3D8R": Hexahedron,
+    "C3D8RH": Hexahedron,
+    "C3D8RS": Hexahedron,
 }
 
