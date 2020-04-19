@@ -34,8 +34,7 @@ class Model:
         if element not in self.elements:
             self.elements[element._num] = element
 
-    # TODO: implement
-    def add_elem_output(self, var, data):
+    def add_elem_output(self, elem, var, data, step, inc):
         """Add element output data
 
         Parameters
@@ -48,9 +47,15 @@ class Model:
         TODO
 
         """
-        pass
+        curr_step = self._curr_out_step
+        curr_inc = self._curr_incr
 
-    def add_nodal_output(self, node, var, data, step=1, inc=1):
+        if var not in self.elem_output[curr_step][curr_inc]:
+            self.elem_output[curr_step][curr_inc][var] = dict()
+
+        self.elem_output[step][inc][var][elem] = data
+
+    def add_nodal_output(self, node, var, data, step, inc):
         """Add nodal output results
 
         Parameters
@@ -95,6 +100,8 @@ class Model:
             self._curr_incr = inc_n
             # Initialize output repository for the current increment in step
             self.nodal_output[n] = {inc_n: dict()}
+            self.elem_output[n] = {inc_n: dict()}
+
         # Add increment to step
         else:
             step_time = data["step time"]
@@ -104,6 +111,7 @@ class Model:
 
             # Initialize output repository for the current increment in step
             self.nodal_output[n][inc_n] = dict()
+            self.elem_output[n][inc_n] = dict()
 
             self._curr_out_step = data["step number"]
             self._curr_incr = data["increment number"]
@@ -126,6 +134,29 @@ class Model:
         keys = sorted(list(self.nodes.keys()))
 
         results = self.nodal_output[step][inc][var]
+
+        list_res = [results[k] for k in keys]
+
+        return np.array(list_res)
+
+    def get_element_result(self, var, step, inc):
+        """Get element results.
+
+        Parameters
+        ----------
+        var : TODO
+        step : TODO
+        inc : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        # FIXME: have this variable sorted globally
+        keys = sorted(list(self.elements.keys()))
+
+        results = self.elem_output[step][inc][var]
 
         list_res = [results[k] for k in keys]
 
@@ -290,7 +321,7 @@ class Node2D(Node):
 
 
         """
-        Node.__init__(self, num, model)
+        super().__init__(num, model)
 
         self._x = np.float(x)
         self._y = np.float(y)
@@ -318,7 +349,7 @@ class Node3D(Node):
 
 
         """
-        Node.__init__(self, num, model)
+        super().__init__(num, model)
 
         self._x = np.float(x)
         self._y = np.float(y)

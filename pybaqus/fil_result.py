@@ -17,24 +17,40 @@ class FilResult:
     records : list(str)
         List of the imported records of the *.fil file
 
+    Attributes
+    ----------
+    _elem_out_list : list
+        List of element/node numbers that correspond to the following output records
+
     """
 
     PARSE_MAP = {
-            1: ("_parse_elem_header", ),
-            21: ("_parse_elem_output", ),
-            101: ("_parse_nodal_output", ["U"]),
-            104: ("_parse_nodal_output", ["RF"]),
-            106: ("_parse_nodal_output", ["CF"]),
-            107: ("_parse_nodal_output", ["COORD"]),
-            146: ("_parse_nodal_output", ["TF"]),
-            1900: ("_parse_element", ),
-            1901: ("_parse_node", ),
-            2000: ("_parse_step", ),
-            }
+        1: ("_parse_elem_header", []),
+        8: ("_parse_elem_output", ["COORD"]),
+        11: ("_parse_elem_output", ["S"]),
+        21: ("_parse_elem_output", ["E"]),
+        101: ("_parse_nodal_output", ["U"]),
+        104: ("_parse_nodal_output", ["RF"]),
+        106: ("_parse_nodal_output", ["CF"]),
+        107: ("_parse_nodal_output", ["COORD"]),
+        146: ("_parse_nodal_output", ["TF"]),
+        1900: ("_parse_element", []),
+        1901: ("_parse_node", []),
+        1911: ("_parse_output_request", []),
+        2000: ("_parse_step", []),
+    }
 
     def __init__(self, records):
         self._records = records
         self.model = Model()
+
+        self._curr_elem_out: int = None
+        self._curr_int_point: int = None
+        self._curr_step: int = None
+        self._curr_inc: int = None
+        self._flag_output: int = None
+        self._output_request_set: str = None
+        self._output_elem_type: str = None
 
         self._parse_records()
 
@@ -50,7 +66,7 @@ class FilResult:
 
         pattern = (
             r"[ADEI](?: \d(\d+)|"  # ints
-            + r" (\d+\.\d+(?:E|D)(?:\+|\-)\d+)|"  # floats
+            + r"((?: |-)\d+\.\d+(?:E|D)(?:\+|-)\d+)|"  # floats
             + r"(.{8}))"  # strings
         )
 
@@ -72,18 +88,14 @@ class FilResult:
                 else:
                     vars_i.append(v_i[2])
 
-
             # Process record
             key = vars_i[1]
             # Lookup the key in dictionary and execute the respective functions
             if key in self.PARSE_MAP:
-                try:
-                    args = self.PARSE_MAP[key][1]
-                    getattr(self, self.PARSE_MAP[key][0])(vars_i, *args)
-                except:
-                    getattr(self, self.PARSE_MAP[key][0])(vars_i)
-            # else:
-            #     print(f"Key {key} not defined!")
+                args = self.PARSE_MAP[key][1]
+                getattr(self, self.PARSE_MAP[key][0])(vars_i, *args)
+            else:
+                print(f"Key {key} not defined!")
 
     def _parse_element(self, record):
         """Parse the data of an element
@@ -121,20 +133,43 @@ class FilResult:
 
         self.model.add_node(node)
 
-    def _parse_elem_output(self, record):
+    def _parse_elem_output(self, record, var):
         """Parse output data for elements.
 
         Parameters
         ----------
         record : list
+        var : str
+            Name of the variable
+        which : str
+            Correspond the data to an element or node ("elem", "node")
 
         Returns
         -------
         TODO
 
         """
-        # print(record)
-        pass
+        step = self._curr_step
+        inc = self._curr_inc
+
+        flag_out = self._flag_output
+
+        if flag_out == 0:
+            n_elem = self._curr_elem_out
+
+            for ix, data in enumerate(record[2:], start=1):
+                self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc)
+        elif flag_out == 1:
+            n_node = self._curr_elem_out
+
+            for ix, data in enumerate(record[2:], start=1):
+                self.model.add_nodal_output(n_node, f"{var}{ix}", data, step, inc)
+        elif flag_out == 2:
+            # TODO: implement modal output
+            pass
+        elif flag_out == 3:
+            # TODO: implement set energy output
+            pass
 
     def _parse_elem_header(self, record):
         """Parse the element record
@@ -148,8 +183,20 @@ class FilResult:
         TODO
 
         """
-        # print(record)
-        pass
+        num = record[2]
+        n_int_point = record[3]
+        n_sec_point = record[4]
+        loc_id = record[5]
+        name_rebar = record[6]
+        n_direct_stresses = record[7]
+        n_shear_stresses = record[8]
+        n_diretions = record[9]
+        n_sec_force_comp = record[10]
+
+        # Append the element/node number to the list of elements/nodes which
+        # data is going to be read next
+        self._curr_elem_out = num
+        self._curr_int_point = n_int_point
 
     def _parse_nodal_output(self, record, var):
         """Parse the nodal record
@@ -163,13 +210,38 @@ class FilResult:
         TODO
 
         """
+        step = self._curr_step
+        inc = self._curr_inc
+
         if len(record) > 4:
             for ix, r_i in enumerate(record[3:], start=1):
-                self.model.add_nodal_output(node=record[2], var=f"{var}{ix}", data=r_i)
+                self.model.add_nodal_output(
+                    node=record[2], var=f"{var}{ix}", data=r_i, step=step, inc=inc
+                )
         else:
-            self.model.add_nodal_output(node=record[2], var=var, data=r_i[3])
+            self.model.add_nodal_output(
+                node=record[2], var=var, data=r_i[3], step=step, inc=inc
+            )
 
         return 1
+
+    def _parse_output_request(self, record):
+        """Parse the output request
+
+        Parameters
+        ----------
+        record : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        self._flag_output = record[2]
+        self._output_request_set = record[3]
+        if self._flag_output == 0:
+            self._output_elem_type = record[4]
+
 
     def _parse_step(self, record):
         """Parse the current step
@@ -183,22 +255,26 @@ class FilResult:
         TODO
 
         """
-        n = record[7]
+        n_step = record[7]
+        n_inc = record[8]
 
         data = {
-                "total time": record[2],
-                "step time": record[3],
-                "max creep": record[4],
-                "solution amplitude": record[5],
-                "procedure type": record[6],
-                "step number": record[7],
-                "increment number": record[8],
-                "linear perturbation": record[9],
-                "load proportionality": record[10],
-                "frequency": record[11],
-                "time increment": record[12],
-                "subheading": "".join(record[13:]),
+            "total time": record[2],
+            "step time": record[3],
+            "max creep": record[4],
+            "solution amplitude": record[5],
+            "procedure type": record[6],
+            "step number": record[7],
+            "increment number": record[8],
+            "linear perturbation": record[9],
+            "load proportionality": record[10],
+            "frequency": record[11],
+            "time increment": record[12],
+            "subheading": "".join(record[13:]),
         }
 
-        self.model.add_step(n, data)
+        self.model.add_step(n_step, data)
+
+        self._curr_step = n_step
+        self._curr_inc = n_inc
 
