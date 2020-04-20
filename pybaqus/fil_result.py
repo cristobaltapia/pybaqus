@@ -42,11 +42,11 @@ class FilResult:
         1911: ("_parse_output_request", []),
         1921: ("_parse_not_implemented", ["Abaqus release, etc."]),
         1922: ("_parse_not_implemented", ["Heading"]),
-        1931: ("_parse_not_implemented", ["Node set"]),
-        1932: ("_parse_not_implemented", ["Node set continuation"]),
-        1933: ("_parse_not_implemented", ["Element set"]),
-        1934: ("_parse_not_implemented", ["Element set continuation"]),
-        1940: ("_parse_not_implemented", ["Label cross-reference"]),
+        1931: ("_parse_set", [False, "node"]),
+        1932: ("_parse_set", [True, "node"]),
+        1933: ("_parse_set", [False, "element"]),
+        1934: ("_parse_set", [True, "element"]),
+        1940: ("_parse_label_cross_ref", []),
         2000: ("_parse_step", ["start"]),
         2001: ("_parse_step", ["end"]),
     }
@@ -65,6 +65,10 @@ class FilResult:
         self._dof_map: dict = dict()
         self._model_dimension: int = None
         self._node_records: list = list()
+
+        self._curr_set: str = None
+        self._tmp_sets: dict = {"element": dict(), "node": dict()}
+        self._label_cross_ref: dict = dict()
 
         self._parse_records()
 
@@ -346,6 +350,57 @@ class FilResult:
 
         # Process all nodes
         self._parse_all_nodes()
+
+    def _parse_set(self, record, add, s_type):
+        """Parse the element sets
+
+        Parameters
+        ----------
+        record : TODO
+        add : bool
+            Flags whether records are added to an existing set a new set has to be
+            created.
+        s_type : str
+            Type of set ("element", "node")
+
+        Returns
+        -------
+        TODO
+
+        """
+
+        if add:
+            elements = record[3:]
+            ref = self._curr_set
+            self._tmp_sets[s_type][ref].extend(elements)
+        else:
+            elements = record[2:]
+            ref = int(record[2].strip())
+            self._curr_set = ref
+            self._tmp_sets[s_type][ref] = elements
+
+    def _parse_label_cross_ref(self, record):
+        """Parse label cross-references
+
+        Parameters
+        ----------
+        record : list
+            Records parsed from the *.fil file
+
+        """
+        ref = record[2]
+        label = "".join(record[3:]).strip()
+
+        self._label_cross_ref[ref] = label
+
+        tmp_sets = self._tmp_sets
+
+        if ref in tmp_sets["element"]:
+            elements = tmp_sets["element"][ref]
+            self.model.add_set(label, elements, "element")
+        elif ref in tmp_sets["node"]:
+            elements = tmp_sets["node"][ref]
+            self.model.add_set(label, elements, "node")
 
     def _parse_not_implemented(self, record, r_type):
         """Helper function to deal with the not yet implemented parsers.

@@ -17,6 +17,8 @@ class Model:
     def __init__(self):
         self.nodes: dict = dict()
         self.elements: dict = dict()
+        self.element_sets: dict = dict()
+        self.node_sets: dict = dict()
         self.results: dict = dict()
         self.metadata: dict = dict()
         self.mesh = None
@@ -34,6 +36,23 @@ class Model:
     def add_element(self, element):
         if element not in self.elements:
             self.elements[element._num] = element
+
+    def add_set(self, name, elements, s_type):
+        """Add an element set.
+
+        Parameters
+        ----------
+        name : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        if s_type == "node":
+            self.node_sets[name] = elements
+        elif s_type == "element":
+            self.element_sets[name] = elements
 
     def add_elem_output(self, elem, var, data, step, inc):
         """Add element output data
