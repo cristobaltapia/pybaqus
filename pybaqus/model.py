@@ -486,6 +486,8 @@ class LineElement(Element):
 ELEMENTS = {
     # 1D- Rigid
     "R2D2": LineElement,
+    "R3D3": Triangle,
+    "R3D4": Quad,
     # 2D Continuum
     "S4R": Quad,
     "CPS4R": Quad,
