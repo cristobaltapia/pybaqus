@@ -266,26 +266,40 @@ class FilResult:
         TODO
 
         """
-        n_step = record[7]
-        n_inc = record[8]
+        if flag == "start":
+            n_step = record[7]
+            n_inc = record[8]
 
-        data = {
-            "total time": record[2],
-            "step time": record[3],
-            "max creep": record[4],
-            "solution amplitude": record[5],
-            "procedure type": record[6],
-            "step number": record[7],
-            "increment number": record[8],
-            "linear perturbation": record[9],
-            "load proportionality": record[10],
-            "frequency": record[11],
-            "time increment": record[12],
-            "subheading": "".join(record[13:]),
-        }
+            data = {
+                "total time": record[2],
+                "step time": record[3],
+                "max creep": record[4],
+                "solution amplitude": record[5],
+                "procedure type": record[6],
+                "step number": record[7],
+                "increment number": record[8],
+                "linear perturbation": record[9],
+                "load proportionality": record[10],
+                "frequency": record[11],
+                "time increment": record[12],
+                "subheading": "".join(record[13:]),
+            }
 
-        self.model.add_step(n_step, data)
+            self.model.add_step(n_step, data)
 
-        self._curr_step = n_step
-        self._curr_inc = n_inc
+            self._curr_step = n_step
+            self._curr_inc = n_inc
+        else:
+            self._curr_step = None
+            self._curr_inc = None
 
+    def _parse_not_implemented(self, record, r_type):
+        """Helper function to deal with the not yet implemented parsers.
+
+        Parameters
+        ----------
+        record : TODO
+        r_type : str
+
+        """
+        print(f"Record key {record[1]} ({r_type}) not yet implemented!")
