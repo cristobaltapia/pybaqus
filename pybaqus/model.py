@@ -212,11 +212,16 @@ class Model:
         """Add metadata to the model."""
         self.metadata[metadata[0]] = metadata[1]
 
-    def get_node_coords(self):
+    def get_node_coords(self, node_set=None):
         """Get a list with the node coordinates.
         """
         nodes = self.nodes
-        keys = sorted(list(self.nodes.keys()))
+
+        if node_set is not None:
+            node_ids = self.node_sets[node_set]
+            nodes = {k: nodes[k] for k in node_ids}
+
+        keys = sorted(list(nodes.keys()))
         coords = list()
 
         for k in keys:
