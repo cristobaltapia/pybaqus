@@ -257,7 +257,7 @@ class Model:
 
         return coords_ar
 
-    def get_cells(self):
+    def get_cells(self, elem_set=None):
         """Get the definition of cells for all elements.
 
         The format is the one required by VTK.
@@ -273,7 +273,13 @@ class Model:
 
         """
         elements = self.elements
-        keys = sorted(list(self.elements.keys()))
+
+        if elem_set is not None:
+            elem_ids = self.element_sets[elem_set]
+            elements = {k: elements[k] for k in elem_ids}
+
+        keys = sorted(list(elements.keys()))
+
         cells = list()
         offset = list()
         elem_type = list()
@@ -289,7 +295,7 @@ class Model:
 
         return ar_cells, ar_offset, ar_elem_type
 
-    def get_mesh(self):
+    def get_mesh(self, elem_set=None):
         """Construct the mesh of the finite element model
 
         Returns
@@ -299,7 +305,7 @@ class Model:
 
         """
         nodes = self.get_node_coords()
-        cells, offset, elem_t = self.get_cells()
+        cells, offset, elem_t = self.get_cells(elem_set)
 
         mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
 

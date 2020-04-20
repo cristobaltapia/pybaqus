@@ -370,11 +370,11 @@ class FilResult:
         """
 
         if add:
-            elements = record[3:]
+            elements = record[2:]
             ref = self._curr_set
             self._tmp_sets[s_type][ref].extend(elements)
         else:
-            elements = record[2:]
+            elements = record[3:]
             ref = int(record[2].strip())
             self._curr_set = ref
             self._tmp_sets[s_type][ref] = elements
