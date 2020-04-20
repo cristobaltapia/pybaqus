@@ -8,7 +8,7 @@ import numpy as np
 from .fil_result import FilResult
 
 
-def read_fil(file_name):
+def open_fil(file_name):
     """Read the *.fil file
 
     Parameters
