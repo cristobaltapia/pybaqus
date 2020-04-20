@@ -34,10 +34,21 @@ class FilResult:
         106: ("_parse_nodal_output", ["CF"]),
         107: ("_parse_nodal_output", ["COORD"]),
         146: ("_parse_nodal_output", ["TF"]),
+        1501: ("_parse_not_implemented", ["Surface definition header"]),
+        1502: ("_parse_not_implemented", ["Surface facet"]),
         1900: ("_parse_element", []),
         1901: ("_parse_node", []),
+        1902: ("_parse_not_implemented", ["Active degrees of freedom"]),
         1911: ("_parse_output_request", []),
-        2000: ("_parse_step", []),
+        1921: ("_parse_not_implemented", ["Abaqus release, etc."]),
+        1922: ("_parse_not_implemented", ["Heading"]),
+        1931: ("_parse_not_implemented", ["Node set"]),
+        1932: ("_parse_not_implemented", ["Node set continuation"]),
+        1933: ("_parse_not_implemented", ["Element set"]),
+        1934: ("_parse_not_implemented", ["Element set continuation"]),
+        1940: ("_parse_not_implemented", ["Label cross-reference"]),
+        2000: ("_parse_step", ["start"]),
+        2001: ("_parse_step", ["end"]),
     }
 
     def __init__(self, records):
