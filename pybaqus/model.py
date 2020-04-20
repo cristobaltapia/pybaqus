@@ -25,6 +25,7 @@ class Model:
         self.steps: dict = dict()
         self._curr_out_step: int = None
         self._curr_incr: int = None
+        self._dimension: int = None
 
     def add_node(self, node):
         if node not in self.nodes:
@@ -139,6 +140,31 @@ class Model:
 
         return np.array(list_res)
 
+    def get_nodal_vector_result(self, var, step, inc):
+        """Get the vector of a variable at each node.
+
+        Parameters
+        ----------
+        step : TODO
+        inc : TODO
+
+        Returns
+        -------
+        array :
+            Nx3 array of displacements in each node
+
+        """
+        nodes = self.nodes
+        keys = sorted(list(self.nodes.keys()))
+        coords = list()
+
+        for k in keys:
+            coords.append(self._get_node_vector_result(k, var, step, inc))
+
+        coords_ar = np.array(coords)
+
+        return coords_ar
+
     def get_element_result(self, var, step, inc):
         """Get element results.
 
@@ -181,13 +207,17 @@ class Model:
 
         return coords_ar
 
-    def get_deformed_node_coords(self, step):
+    def get_deformed_node_coords(self, step, inc, scale=1):
         """Get deformed node coordinates.
 
         Parameters
         ----------
         step : int
             Step to get deformations from
+        inc : int
+            Index of the increment in the required step.
+        scale : float
+            Multiply the deformations by this number.
 
         Returns
         -------
@@ -195,7 +225,18 @@ class Model:
             2D-Array with the node coordinates
 
         """
-        pass
+        nodes = self.nodes
+        keys = sorted(list(self.nodes.keys()))
+        coords = list()
+
+        for k in keys:
+            # Get the nodal displacements
+            u = self._get_node_vector_result(k, step, inc)
+            coords.append(nodes[k].get_coords() + u * scale)
+
+        coords_ar = np.array(coords)
+
+        return coords_ar
 
     def get_cells(self):
         """Get the definition of cells for all elements.
@@ -247,13 +288,15 @@ class Model:
 
         return self.mesh
 
-    def get_deformed_mesh(self, step, scale):
+    def get_deformed_mesh(self, step, inc, scale=1):
         """Construct the deformed mesh in step with scaled deformations.
 
         Parameters
         ----------
         step : int
             Index of the needed step
+        inc : int
+            Index of the increment within the step
         scale : flotat
             Scale to be applied to the deformations
 
@@ -263,7 +306,7 @@ class Model:
             VTK mesh unstructured grid
 
         """
-        nodes = self.get_node_coords()
+        nodes = self.get_deformed_node_coords(step, inc, scale)
         cells, offset, elem_t = self.get_cells()
 
         mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
@@ -271,6 +314,39 @@ class Model:
         self.mesh = mesh
 
         return self.mesh
+
+    def _get_node_vector_result(self, n, var, step, inc):
+        """Get the displacement vector of the node `n`
+
+        Parameters
+        ----------
+        n : int
+            The index of the node.
+        step : int
+            The step for which the displacement is required.
+        inc : int
+            The increment within the required step.
+
+        Returns
+        -------
+        array :
+            An array with the displacements of the node
+
+        """
+        nodal_output = self.nodal_output[step][inc]
+
+        if self._dimension == 3:
+            u = np.array(
+                [
+                    nodal_output[f"{var}1"][n],
+                    nodal_output[f"{var}2"][n],
+                    nodal_output[f"{var}3"][n],
+                ]
+            )
+        else:
+            u = np.array([nodal_output[f"{var}1"][n], nodal_output[f"{var}2"][n], 0,])
+
+        return u
 
 
 class Node:
@@ -286,15 +362,13 @@ class Node:
     """
 
     def __init__(self, num, model):
-        """TODO: to be defined.
-
-
-
-        """
         self._num: int = num
         self._x: float = None
         self._y: float = None
         self._z: float = None
+        self._rx: float = None
+        self._ry: float = None
+        self._rz: float = None
         self.model = model
 
     def get_coords(self):
@@ -306,7 +380,6 @@ class Node:
 
 
 class Node2D(Node):
-
     """Two-dimensional node.
 
     Parameters
@@ -317,15 +390,12 @@ class Node2D(Node):
 
     """
 
-    def __init__(self, x, y, num, model):
-        """TODO: to be defined.
-
-
-        """
+    def __init__(self, num, dof_map, model, *dof):
         super().__init__(num, model)
 
-        self._x = np.float(x)
-        self._y = np.float(y)
+        self._x = np.float(dof[dof_map[1]])
+        self._y = np.float(dof[dof_map[2]])
+        self._rz = np.float(dof[dof_map[6]])
         self._num = num
 
     def _get_coords(self):
@@ -333,28 +403,30 @@ class Node2D(Node):
 
 
 class Node3D(Node):
-
     """Three-dimensional node.
 
     Parameters
     ----------
-    x : TODO
-    y : TODO
-    z : TODO
-    num : TODO
+    num : int
+        Number of the node
+    dof_map : dict
+        Dictionary mapping the active DOF to each nodal output position
+    model : `obj`:Model
+        Model to which the node belongs to.
+    *dof :
+        The values for all degree of freedom.
 
     """
 
-    def __init__(self, x, y, z, num, model):
-        """TODO: to be defined.
-
-
-        """
+    def __init__(self, num, dof_map, model, *dof):
         super().__init__(num, model)
 
-        self._x = np.float(x)
-        self._y = np.float(y)
-        self._z = np.float(z)
+        self._x = np.float(dof[dof_map[1]])
+        self._y = np.float(dof[dof_map[2]])
+        self._z = np.float(dof[dof_map[3]])
+        self._rx = np.float(dof[dof_map[4]])
+        self._ry = np.float(dof[dof_map[5]])
+        self._rz = np.float(dof[dof_map[6]])
         self._num = num
 
     def _get_coords(self):
@@ -483,8 +555,9 @@ class LineElement(Element):
         self._nodes = [n1, n2]
         self._elem_type = vtk.VTK_LINE
 
+
 ELEMENTS = {
-    # 1D- Rigid
+    # Rigid
     "R2D2": LineElement,
     "R3D3": Triangle,
     "R3D4": Quad,

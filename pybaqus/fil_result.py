@@ -38,7 +38,7 @@ class FilResult:
         1502: ("_parse_not_implemented", ["Surface facet"]),
         1900: ("_parse_element", []),
         1901: ("_parse_node", []),
-        1902: ("_parse_not_implemented", ["Active degrees of freedom"]),
+        1902: ("_parse_active_dof", []),
         1911: ("_parse_output_request", []),
         1921: ("_parse_not_implemented", ["Abaqus release, etc."]),
         1922: ("_parse_not_implemented", ["Heading"]),
@@ -62,6 +62,9 @@ class FilResult:
         self._flag_output: int = None
         self._output_request_set: str = None
         self._output_elem_type: str = None
+        self._dof_map: dict = dict()
+        self._model_dimension: int = None
+        self._node_records: list = list()
 
         self._parse_records()
 
@@ -134,15 +137,43 @@ class FilResult:
         record : list
 
         """
-        n_number = record[2]
-        coords = record[3:]
-
-        if len(coords) == 2:
-            node = Node2D(*coords, num=n_number, model=self.model)
+        # Wait until the 'Active degree of freedom' key has been processed
+        if self._model_dimension is None:
+            self._node_records.append(record)
         else:
-            node = Node3D(*coords[:3], num=n_number, model=self.model)
+            n_number = record[2]
+            dofs = record[3:]
+            dof_map = self._dof_map
 
-        self.model.add_node(node)
+            if self._model_dimension == 2:
+                node = Node2D(n_number, dof_map, self.model, *dofs)
+            else:
+                node = Node3D(n_number, dof_map, self.model, *dofs)
+
+            self.model.add_node(node)
+
+    def _parse_all_nodes(self):
+        """Parse all nodes.
+
+        This has to be executed after the active degree of freedom
+        are specified.
+
+        Parameters
+        ----------
+        records : list
+            A list of all the records with nodes
+
+        Returns
+        -------
+        TODO
+
+        """
+        records = self._node_records
+
+        for record in records:
+            self._parse_node(record)
+
+        self._node_records = list()
 
     def _parse_elem_output(self, record, var):
         """Parse output data for elements.
@@ -253,8 +284,7 @@ class FilResult:
         if self._flag_output == 0:
             self._output_elem_type = record[4]
 
-
-    def _parse_step(self, record):
+    def _parse_step(self, record, flag):
         """Parse the current step
 
         Parameters
@@ -292,6 +322,30 @@ class FilResult:
         else:
             self._curr_step = None
             self._curr_inc = None
+
+    def _parse_active_dof(self, record):
+        """Parse the active degrees of freedom.
+
+        Parameters
+        ----------
+        record : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        active_dof = np.array(record[2:], dtype=int)
+        dimension = np.sum(np.not_equal(active_dof[:3], np.zeros(3)), dtype=int)
+        self._model_dimension = dimension
+        self.model._dimension = dimension
+
+        # (k + 1): because the dof's start at 1
+        # (val -1): because they will be reference to a list, which is 0-indexed
+        self._dof_map = {(k + 1): (val - 1) for k, val in enumerate(active_dof) if val != 0}
+
+        # Process all nodes
+        self._parse_all_nodes()
 
     def _parse_not_implemented(self, record, r_type):
         """Helper function to deal with the not yet implemented parsers.
