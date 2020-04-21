@@ -31,9 +31,19 @@ class Element:
         self._n_nodes: int = None
         self._connectivity: list = None
         self.model = model
-        self.elem_type = None
+        self._elem_type = None
         self._faces: dict = dict()
         self._face_shape: dict = dict()
+
+    @property
+    def elem_type(self):
+        """TODO: Docstring for elem_type.
+        Returns
+        -------
+        TODO
+
+        """
+        return self._elem_type
 
     def get_nodes(self):
         return self._nodes
