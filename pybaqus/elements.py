@@ -30,7 +30,7 @@ class Element:
         self._nodes: list = None
         self._n_nodes: int = None
         self._connectivity: list = None
-        self.model = model
+        self._model = model
         self._elem_type = None
         self._faces: dict = dict()
         self._face_shape: dict = dict()
@@ -45,6 +45,10 @@ class Element:
         """
         return self._elem_type
 
+    @property
+    def model(self):
+        return self._model
+
     def get_nodes(self):
         return self._nodes
 
@@ -56,7 +60,7 @@ class Element:
         TODO
 
         """
-        all_nodes = self.model.nodes
+        all_nodes = self._model.nodes
         nodes = [all_nodes[n].coords for n in self._nodes]
 
         return nodes

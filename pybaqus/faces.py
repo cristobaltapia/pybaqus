@@ -26,6 +26,23 @@ class Surface:
         self._dimension = dimension_map[dimension]
         self._mesh = None
 
+    @property
+    def dimension(self):
+        return self._dimension
+
+    @property
+    def mesh(self):
+        """TODO: Docstring for mesh.
+        Returns
+        -------
+        TODO
+
+        """
+        if self._mesh is not None:
+            return self._mesh
+        else:
+            return self._gen_mesh()
+
     def __str__(self):
         text = (
             f"{self._type} surface '{self._name}'\n"
@@ -106,7 +123,7 @@ class Surface:
 
         return used_nodes
 
-    def get_mesh(self):
+    def _gen_mesh(self):
         """Construct the mesh of the finite element model
 
         Returns

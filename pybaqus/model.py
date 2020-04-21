@@ -378,7 +378,7 @@ class Model:
         """
         surface = self.surfaces[name]
 
-        return surface.get_mesh()
+        return surface.mesh
 
     def get_deformed_mesh(self, step, inc, scale=1):
         """Construct the deformed mesh in step with scaled deformations.
