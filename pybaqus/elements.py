@@ -47,7 +47,7 @@ class Element:
 
         """
         all_nodes = self.model.nodes
-        nodes = [all_nodes[n].get_coords() for n in self._nodes]
+        nodes = [all_nodes[n].coords for n in self._nodes]
 
         return nodes
 

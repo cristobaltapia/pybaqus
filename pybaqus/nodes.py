@@ -26,7 +26,32 @@ class Node:
         self._rz: float = None
         self.model = model
 
-    def get_coords(self):
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def y(self):
+        return self._y
+
+    @property
+    def z(self):
+        return self._z
+
+    @property
+    def rx(self):
+        return self._rx
+
+    @property
+    def ry(self):
+        return self._ry
+
+    @property
+    def rz(self):
+        return self._rz
+
+    @property
+    def coords(self):
         return self._get_coords()
 
     def _get_coords(self):

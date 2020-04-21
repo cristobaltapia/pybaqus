@@ -64,7 +64,7 @@ class Surface:
 
         # Remap node keys
         new_keys = {old: new for new, old in enumerate(u_nodes.keys())}
-        new_nodes = np.array([u_nodes[k].get_coords() for k in u_nodes.keys()])
+        new_nodes = np.array([u_nodes[k].coords for k in u_nodes.keys()])
 
         list_nodes = list()
         offset = list()

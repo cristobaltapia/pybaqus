@@ -270,7 +270,7 @@ class Model:
         coords = list()
 
         for k in keys:
-            coords.append(nodes[k].get_coords())
+            coords.append(nodes[k].coords)
 
         coords_ar = np.array(coords)
 
@@ -301,7 +301,7 @@ class Model:
         for k in keys:
             # Get the nodal displacements
             u = self._get_node_vector_result(k, step, inc)
-            coords.append(nodes[k].get_coords() + u * scale)
+            coords.append(nodes[k].coords + u * scale)
 
         coords_ar = np.array(coords)
 
