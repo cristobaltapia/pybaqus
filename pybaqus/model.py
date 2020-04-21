@@ -5,6 +5,7 @@ import numpy as np
 import vtk
 from pyvista import UnstructuredGrid
 from .step import Step
+from .faces import RigidSurface, DeformableSurface, Face
 
 
 class Model:
@@ -20,7 +21,6 @@ class Model:
         self.element_sets: dict = dict()
         self.node_sets: dict = dict()
         self.surfaces: dict = dict()
-        self.rigid_surfaces: dict = dict()
         self.results: dict = dict()
         self.metadata: dict = dict()
         self.mesh = None
@@ -64,13 +64,9 @@ class Model:
         name : TODO
         faces : TODO
 
-        Returns
-        -------
-        TODO
-
         """
         if name not in self.surfaces:
-            self.surfaces[name] = DeformableSurface(name, dimension, master_surf)
+            self.surfaces[name] = DeformableSurface(name, dimension, self, master_surf)
 
     def add_rigid_surface(self, name, dimension, ref_point):
         """Add a surface to the model.
@@ -80,13 +76,9 @@ class Model:
         name : TODO
         faces : TODO
 
-        Returns
-        -------
-        TODO
-
         """
         if name not in self.surfaces:
-            self.surfaces[name] = RigidSurface(name, dimension, ref_point)
+            self.surfaces[name] = RigidSurface(name, dimension, self, ref_point)
 
     def add_face_to_surface(self, surface, face_info):
         """Add a face to an existing surface
@@ -98,12 +90,14 @@ class Model:
         face_info : dict
             Dictionary with the data to create a Face object.
 
-        Returns
-        -------
-        TODO
-
         """
-        face = Face(face_info["element"], face_info["face"], face_info["nodes"])
+        elem_n = face_info["element"]
+        if elem_n == 0:
+            element = None
+        else:
+            element = self.elements[elem_n]
+
+        face = Face(element, face_info["face"], face_info["nodes"])
         self.surfaces[surface].add_face(face)
 
     def add_elem_output(self, elem, var, data, step, inc):
@@ -370,6 +364,23 @@ class Model:
 
         return self.mesh
 
+    def get_surface(self, name, step=None, inc=None, scale=1):
+        """Get mesh of surface.
+
+        Parameters
+        ----------
+        name : TODO
+
+        Returns
+        -------
+        mesh :
+            Mesh representation of the surface.
+
+        """
+        surface = self.surfaces[name]
+
+        return surface.get_mesh()
+
     def get_deformed_mesh(self, step, inc, scale=1):
         """Construct the deformed mesh in step with scaled deformations.
 
@@ -429,6 +440,10 @@ class Model:
             u = np.array([nodal_output[f"{var}1"][n], nodal_output[f"{var}2"][n], 0,])
 
         return u
+
+    def post_import_actions(self):
+        """Execute some functions after importing all the records into the model."""
+        pass
 
 
 class Node:
@@ -542,6 +557,8 @@ class Element:
         self._connectivity: list = None
         self.model = model
         self.elem_type = None
+        self._faces: dict = dict()
+        self._face_shape: dict = dict()
 
     def get_nodes(self):
         return self._nodes
@@ -567,6 +584,38 @@ class Element:
 
         return cell
 
+    def get_face(self, face):
+        """Get a specific face of the element.
+
+        Parameters
+        ----------
+        face : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        face = self._faces[face]
+
+        return face
+
+    def get_face_shape(self, face):
+        """TODO: Docstring for get_face_shape.
+
+        Parameters
+        ----------
+        face : int
+            Number of the face.
+
+        Returns
+        -------
+        vtk_shape :
+            The correct shape of the face.
+
+        """
+        return self._face_shape[face]
+
 
 class Quad(Element):
     """4-node rectangular element."""
@@ -576,6 +625,24 @@ class Quad(Element):
         self._n_nodes = 4
         self._nodes = [n1, n2, n3, n4]
         self._elem_type = vtk.VTK_QUAD
+
+        # Define faces connectivity
+        self._faces = {
+            1: [0, 1],
+            2: [1, 2],
+            3: [2, 3],
+            4: [3, 0],
+            7: [0, 1, 2, 3],
+            8: [3, 2, 1, 0],
+        }
+        self._face_shape = {
+            1: vtk.VTK_LINE,
+            2: vtk.VTK_LINE,
+            3: vtk.VTK_LINE,
+            4: vtk.VTK_LINE,
+            7: vtk.VTK_QUAD,
+            8: vtk.VTK_QUAD,
+        }
 
 
 class Triangle(Element):
@@ -587,6 +654,16 @@ class Triangle(Element):
         self._nodes = [n1, n2, n3]
         self._elem_type = vtk.VTK_TRIANGLE
 
+        # Define faces connectivity
+        self._faces = {1: [0, 1], 2: [1, 2], 3: [2, 0], 7: [0, 1, 2], 8: [2, 1, 0]}
+        self._face_shape = {
+            1: vtk.VTK_LINE,
+            2: vtk.VTK_LINE,
+            3: vtk.VTK_LINE,
+            7: vtk.VTK_TRIANGLE,
+            8: vtk.VTK_TRIANGLE,
+        }
+
 
 class Tetra(Element):
     """4 node tetrahedron elements"""
@@ -596,6 +673,14 @@ class Tetra(Element):
         self._n_nodes = 4
         self._nodes = [n1, n2, n3, n4]
         self._elem_type = vtk.VTK_TETRA
+
+        # Define faces connectivity
+        self._faces = {1: [0, 1, 2], 2: [0, 4, 2], 3: [1, 3, 2], 4: [2, 3, 0]}
+        self._face_shape = {
+            1: vtk.VTK_TRIANGLE,
+            2: vtk.VTK_TRIANGLE,
+            3: vtk.VTK_TRIANGLE,
+        }
 
 
 class Pyramid(Element):
@@ -607,6 +692,21 @@ class Pyramid(Element):
         self._nodes = [n1, n2, n3, n4, n5]
         self._elem_type = vtk.VTK_PYRAMID
 
+        # Define faces connectivity
+        self._faces = {
+            1: [0, 1, 2, 3],
+            2: [0, 4, 1],
+            3: [1, 4, 2],
+            4: [2, 4, 3],
+            5: [3, 4, 0],
+        }
+        self._face_shape = {
+            1: vtk.VTK_QUAD,
+            2: vtk.VTK_TRIANGLE,
+            3: vtk.VTK_TRIANGLE,
+            4: vtk.VTK_TRIANGLE,
+        }
+
 
 class Wedge(Element):
     """6 node triangular prism element."""
@@ -616,6 +716,22 @@ class Wedge(Element):
         self._n_nodes = 6
         self._nodes = [n1, n2, n3, n4, n5, n6]
         self._elem_type = vtk.VTK_WEDGE
+
+        # Define faces connectivity
+        self._faces = {
+            1: [0, 1, 2],
+            2: [3, 5, 4],
+            3: [0, 3, 4, 1],
+            4: [1, 4, 5, 2],
+            5: [2, 5, 3, 0],
+        }
+        self._face_shape = {
+            1: vtk.VTK_TRIANGLE,
+            2: vtk.VTK_TRIANGLE,
+            3: vtk.VTK_QUAD,
+            4: vtk.VTK_QUAD,
+            5: vtk.VTK_QUAD,
+        }
 
 
 class Hexahedron(Element):
@@ -627,15 +743,41 @@ class Hexahedron(Element):
         self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8]
         self._elem_type = vtk.VTK_PYRAMID
 
+        # Define faces connectivity
+        self._faces = {
+            1: [0, 1, 2, 3],
+            2: [4, 7, 6, 5],
+            3: [0, 4, 5, 1],
+            4: [1, 5, 6, 1],
+            5: [2, 6, 7, 4],
+            6: [3, 7, 4, 0],
+        }
+        self._face_shape = {
+            1: vtk.VTK_QUAD,
+            2: vtk.VTK_QUAD,
+            3: vtk.VTK_QUAD,
+            4: vtk.VTK_QUAD,
+            5: vtk.VTK_QUAD,
+            6: vtk.VTK_QUAD,
+        }
+
 
 class LineElement(Element):
-    """2 node pyramid element."""
+    """2 node line element."""
 
     def __init__(self, n1, n2, num, model):
         super().__init__(num, model)
         self._n_nodes = 2
         self._nodes = [n1, n2]
         self._elem_type = vtk.VTK_LINE
+
+        # Define faces connectivity
+        self._faces = {1: [0, 1], 7: [0, 1], 8: [1, 0]}
+        self._face_shape = {
+            1: vtk.VTK_LINE,
+            7: vtk.VTK_LINE,
+            8: vtk.VTK_LINE,
+        }
 
 
 ELEMENTS = {

@@ -34,8 +34,8 @@ class FilResult:
         106: ("_parse_nodal_output", ["CF"]),
         107: ("_parse_nodal_output", ["COORD"]),
         146: ("_parse_nodal_output", ["TF"]),
-        1501: ("_parse_not_implemented", ["Surface definition header"]),
-        1502: ("_parse_not_implemented", ["Surface facet"]),
+        1501: ("_parse_surface", [False]),
+        1502: ("_parse_surface", [True]),
         1900: ("_parse_element", []),
         1901: ("_parse_node", []),
         1902: ("_parse_active_dof", []),
@@ -66,20 +66,17 @@ class FilResult:
         self._model_dimension: int = None
         self._node_records: list = list()
 
-        self._curr_set: str = None
+        self._curr_set: int = None
         self._tmp_sets: dict = {"element": dict(), "node": dict()}
         self._label_cross_ref: dict = dict()
+        self._curr_surface: int = None
+        self._tmp_surf: dict = dict()
+        self._tmp_faces: dict = dict()
 
         self._parse_records()
 
     def _parse_records(self):
-        """Parse the imported records.
-
-        Returns
-        -------
-        TODO
-
-        """
+        """Parse the imported records."""
         records = self._records
 
         pattern = (
@@ -115,7 +112,10 @@ class FilResult:
             else:
                 print(f"Key {key} not defined!")
 
+        # Execute post-read actions on the model
         self._post_parse_alls_surfaces()
+        self.model.post_import_actions()
+
     def _parse_element(self, record):
         """Parse the data of an element
 
@@ -347,7 +347,9 @@ class FilResult:
 
         # (k + 1): because the dof's start at 1
         # (val -1): because they will be reference to a list, which is 0-indexed
-        self._dof_map = {(k + 1): (val - 1) for k, val in enumerate(active_dof) if val != 0}
+        self._dof_map = {
+            (k + 1): (val - 1) for k, val in enumerate(active_dof) if val != 0
+        }
 
         # Process all nodes
         self._parse_all_nodes()
