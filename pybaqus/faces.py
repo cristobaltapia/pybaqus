@@ -123,6 +123,7 @@ class Surface:
 
         return self._mesh
 
+
 class RigidSurface(Surface):
     """Rigid surface object.
 
