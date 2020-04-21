@@ -19,6 +19,8 @@ class Model:
         self.elements: dict = dict()
         self.element_sets: dict = dict()
         self.node_sets: dict = dict()
+        self.surfaces: dict = dict()
+        self.rigid_surfaces: dict = dict()
         self.results: dict = dict()
         self.metadata: dict = dict()
         self.mesh = None
@@ -53,6 +55,56 @@ class Model:
             self.node_sets[name] = elements
         elif s_type == "element":
             self.element_sets[name] = elements
+
+    def add_deformable_surface(self, name, dimension, master_surf):
+        """Add a surface to the model.
+
+        Parameters
+        ----------
+        name : TODO
+        faces : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        if name not in self.surfaces:
+            self.surfaces[name] = DeformableSurface(name, dimension, master_surf)
+
+    def add_rigid_surface(self, name, dimension, ref_point):
+        """Add a surface to the model.
+
+        Parameters
+        ----------
+        name : TODO
+        faces : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        if name not in self.surfaces:
+            self.surfaces[name] = RigidSurface(name, dimension, ref_point)
+
+    def add_face_to_surface(self, surface, face_info):
+        """Add a face to an existing surface
+
+        Parameters
+        ----------
+        surface : str
+            Label of the surface to add the facelt to.
+        face_info : dict
+            Dictionary with the data to create a Face object.
+
+        Returns
+        -------
+        TODO
+
+        """
+        face = Face(face_info["element"], face_info["face"], face_info["nodes"])
+        self.surfaces[surface].add_face(face)
 
     def add_elem_output(self, elem, var, data, step, inc):
         """Add element output data

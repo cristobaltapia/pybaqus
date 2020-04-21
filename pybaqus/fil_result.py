@@ -115,6 +115,7 @@ class FilResult:
             else:
                 print(f"Key {key} not defined!")
 
+        self._post_parse_alls_surfaces()
     def _parse_element(self, record):
         """Parse the data of an element
 
@@ -378,6 +379,92 @@ class FilResult:
             ref = int(record[2].strip())
             self._curr_set = ref
             self._tmp_sets[s_type][ref] = elements
+
+    def _parse_surface(self, record, add_face):
+        """Parse the surface records.
+
+        Parameters
+        ----------
+        record : list
+            Record entry from the *.fil file.
+        add_face : bool
+            Flag to determine whether a face has to be added to an existing surface
+            (True), or whether a new surfaces has to be created (False)
+
+        """
+        if add_face:
+            # Add faces to existing surface
+            label = self._curr_surface
+
+            face_info = {
+                "element": record[2],
+                "face": record[3],
+                "nodes": record[5:],
+            }
+            self._tmp_faces[label].append(face_info)
+
+        else:
+            # Create new surface container
+            s_type = record[4]
+            name = int(record[2].strip())
+            dim = record[3]
+            n_faces = record[5]
+
+            # Set temporary variable
+            self._curr_surface = name
+            # Start corresponding container for the surface
+            self._tmp_faces[name] = list()
+
+            if s_type == 1:
+                # Deformable surface
+                n_slaves = record[6]
+                if n_slaves > 0:
+                    master_names = record[7:]
+                else:
+                    master_names = []
+
+                self._tmp_surf[name] = {
+                    "dimension": dim,
+                    "type": "deformable",
+                    "master names": master_names,
+                }
+
+            elif s_type == 2:
+                # Rigid surface
+                ref_label = record[6]
+                self._tmp_surf[name] = {
+                    "dimension": dim,
+                    "type": "rigid",
+                    "reference point": ref_label,
+                }
+
+    def _post_parse_alls_surfaces(self):
+        """Process all the durfaces after reading all records."""
+        surfaces = self._tmp_surf
+        faces = self._tmp_faces
+        model = self.model
+
+        for ix, surf in surfaces.items():
+            if surf["type"] == "rigid":
+                # Get name
+                name = self._label_cross_ref[ix]
+                dim = surf["dimension"]
+                ref = surf["reference point"]
+                model.add_rigid_surface(name, dim, ref)
+
+                for face_i in faces[ix]:
+                    model.add_face_to_surface(name, face_i)
+
+            elif surf["type"] == "deformable":
+                # Get name
+                print(surf)
+                name = self._label_cross_ref[ix]
+                dim = surf["dimension"]
+                master = surf["master names"]
+                self.model.add_deformable_surface(name, dim, master)
+
+                for face_i in faces[ix]:
+                    model.add_face_to_surface(name, face_i)
 
     def _parse_label_cross_ref(self, record):
         """Parse label cross-references
