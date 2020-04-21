@@ -5,7 +5,9 @@ import re
 
 import numpy as np
 
-from .model import ELEMENTS, Model, Node2D, Node3D
+from .model import Model
+from .nodes import Node2D, Node3D
+from .elements import ELEMENTS
 
 
 class FilResult:
