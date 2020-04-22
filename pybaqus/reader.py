@@ -5,7 +5,7 @@ import re
 
 import numpy as np
 
-from .fil_result import FilResult
+from .fil_result import FilParser
 
 
 def open_fil(file_name):
@@ -35,6 +35,6 @@ def open_fil(file_name):
     records = re.findall(pattern, res_line)
 
     # Create result object
-    result = FilResult(records)
+    result = FilParser(records)
 
     return result.model

@@ -10,7 +10,7 @@ from .nodes import Node2D, Node3D
 from .elements import ELEMENTS
 
 
-class FilResult:
+class FilParser:
     """
     Parse and store the data from a *.fil file.
 
