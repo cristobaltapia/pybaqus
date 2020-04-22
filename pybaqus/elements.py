@@ -34,6 +34,7 @@ class Element:
         self._elem_type = None
         self._faces: dict = dict()
         self._face_shape: dict = dict()
+        self._n_integ_points: int = None
 
     @property
     def elem_type(self):
@@ -105,6 +106,39 @@ class Element:
         """
         return self._face_shape[face]
 
+    @property
+    def n_integ_points(self):
+        return self._n_integ_points
+
+    @n_integ_points.setter
+    def n_integ_points(self, val):
+        self._n_integ_points = val
+
+    def extrapolate_to_nodes(self, s_int):
+        """Extrapolate results computed on integration points to the nodes.
+
+        Parameters
+        ----------
+        s_int : array
+            Results on the integration points. (Order according to Abaqus definition.)
+
+        Returns
+        -------
+        array
+
+        """
+        e_matrix = self._extrapol_matrix()
+        s_n = e_matrix @ s_int
+        return s_n
+
+    def _extrapol_matrix(self):
+        """Extrapolation matrix used to compute result variables at nodes."""
+
+        e = self._elem_type
+        print(f"Extrapolation matrix for element {e} needs to be defined.")
+
+        return 0
+
 
 class Quad(Element):
     """4-node rectangular element."""
@@ -133,6 +167,48 @@ class Quad(Element):
             8: vtk.VTK_QUAD,
         }
 
+    def _extrapol_matrix(self):
+        """Extrapolation matrix.
+
+        Returns
+        -------
+        TODO
+
+        """
+        if self._n_integ_points == 4:
+            ext_mat = np.array(
+                [
+                    [1.8660254, -0.5, 0.1339746, -0.5],
+                    [-0.5, 1.8660254, -0.5, 0.1339746],
+                    [0.1339746, -0.5, 1.8660254, -0.5],
+                    [-0.5, 0.1339746, -0.5, 1.8660254],
+                ]
+            )
+        elif self._n_integ_points == 1:
+            ext_mat = np.ones((4, 1))
+
+        return ext_mat
+
+    def N1(self, xi, eta):
+        """Shape function for node 1."""
+        n1 = 0.25 * (1.0 - xi) * (1.0 - eta)
+        return n1
+
+    def N2(self, xi, eta):
+        """Shape function for node 2."""
+        n2 = 0.25 * (1.0 + xi) * (1.0 - eta)
+        return n2
+
+    def N3(self, xi, eta):
+        """Shape function for node 3."""
+        n3 = 0.25 * (1.0 + xi) * (1.0 + eta)
+        return n3
+
+    def N4(self, xi, eta):
+        """Shape function for node 4."""
+        n4 = 0.25 * (1.0 - xi) * (1.0 + eta)
+        return n4
+
 
 class Triangle(Element):
     """3-node triangular element."""
@@ -152,6 +228,21 @@ class Triangle(Element):
             7: vtk.VTK_TRIANGLE,
             8: vtk.VTK_TRIANGLE,
         }
+
+    def _extrapol_matrix(self):
+        """Extrapolation matrix.
+
+        Returns
+        -------
+        TODO
+
+        """
+        if self._n_integ_points == 1:
+            ext_mat = np.ones((3, 1))
+        else:
+            ext_mat = None
+
+        return ext_mat
 
 
 class Tetra(Element):
