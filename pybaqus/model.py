@@ -120,13 +120,13 @@ class Model:
         TODO
 
         """
-        curr_step = self._curr_out_step
-        curr_inc = self._curr_incr
+        if var not in self.elem_output[step][inc]:
+            self.elem_output[step][inc][var] = dict()
 
-        if var not in self.elem_output[curr_step][curr_inc]:
-            self.elem_output[curr_step][curr_inc][var] = dict()
+        if elem not in self.elem_output[step][inc][var]:
+            self.elem_output[step][inc][var][elem] = list()
 
-        self.elem_output[step][inc][var][elem] = data
+        self.elem_output[step][inc][var][elem].append(data)
 
     def add_nodal_output(self, node, var, data, step, inc):
         """Add nodal output results
@@ -250,7 +250,7 @@ class Model:
         for ix in keys_out:
             var_i = output[ix]
             # Returns extrapolated variables and respective node labels
-            nodal_i, elem_nodes = elements[ix].extrapolate_to_nodes(np.array([var_i]))
+            nodal_i, elem_nodes = elements[ix].extrapolate_to_nodes(var_i)
             res_nodes[elem_nodes] += nodal_i
             counter[elem_nodes] += 1
 
@@ -304,9 +304,11 @@ class Model:
 
         results = self.elem_output[step][inc][var]
 
-        list_res = [results[k] if k in keys_out else np.nan for k in keys]
+        list_res = [np.mean(results[k]) if k in keys_out else np.nan for k in keys]
 
-        return np.array(list_res)
+        ar_results = np.array(list_res)
+
+        return ar_results
 
     def add_metadata(self, metadata):
         """Add metadata to the model."""

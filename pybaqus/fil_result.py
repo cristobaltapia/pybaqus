@@ -58,7 +58,7 @@ class FilParser:
         self.model = Model()
 
         self._curr_elem_out: int = None
-        self._curr_int_point: int = None
+        self._curr_n_int_points: int = None
         self._curr_step: int = None
         self._curr_inc: int = None
         self._flag_output: int = None
@@ -208,9 +208,10 @@ class FilParser:
         if flag_out == 0:
             n_elem = self._curr_elem_out
             # Get number of integration points
-            int_points = self._curr_int_point
+            int_points = self._curr_n_int_points
             self.model.elements[n_elem].n_integ_points = int_points
 
+            # Append all the records
             for ix, data in enumerate(record[2:], start=1):
                 self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc)
 
@@ -253,7 +254,9 @@ class FilParser:
         # Append the element/node number to the list of elements/nodes which
         # data is going to be read next
         self._curr_elem_out = num
-        self._curr_int_point = n_int_point
+        self._curr_n_int_points = n_int_point
+        self._curr_int_point = 0
+        self._curr_int_point_data = dict()
 
     def _parse_nodal_output(self, record, var):
         """Parse the nodal record
