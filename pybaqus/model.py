@@ -12,6 +12,14 @@ class Model:
 
     This contains all the information of the model.
 
+    Attributes
+    ----------
+    nodes : dict
+    elements : dict
+    element_sets : dict
+    node_sets : dict
+    surfaces : dict
+
     """
 
     def __init__(self):
@@ -198,11 +206,58 @@ class Model:
         # FIXME: have this variable sorted globally
         keys = sorted(list(self.nodes.keys()))
 
-        results = self.nodal_output[step][inc][var]
+        if var in self.nodal_output[step][inc]:
+            results = self.nodal_output[step][inc][var]
+        elif var in self.elem_output[step][inc]:
+            results = self._nodal_result_from_elements(var, step, inc)
+        else:
+            # FIXME: handle errors properly some day
+            print("Variable not present")
 
         list_res = [results[k] for k in keys]
 
         return np.array(list_res)
+
+    def _nodal_result_from_elements(self, var, step, inc):
+        """Get nodal results from element results by extrapolating.
+
+        Shape functions are used to extrapolate to the nodes.
+
+        Parameters
+        ----------
+        var : str
+            Result variable.
+        step : int
+            Step
+        inc : int
+            Increment
+
+        Returns
+        -------
+        array
+
+        """
+        keys_out = self.elem_output[step][inc][var].keys()
+        output = self.elem_output[step][inc][var]
+
+        elements = self.elements
+
+        # FIXME: there are some hacky things here. Try to fix that
+        nodes = self.nodes
+        res_nodes = np.zeros(len(nodes) + 1)
+        counter = np.zeros(len(nodes) + 1)
+
+        for ix in keys_out:
+            var_i = output[ix]
+            # Returns extrapolated variables and respective node labels
+            nodal_i, elem_nodes = elements[ix].extrapolate_to_nodes(np.array([var_i]))
+            res_nodes[elem_nodes] += nodal_i
+            counter[elem_nodes] += 1
+
+        result = res_nodes / counter
+
+        # FIXME: output correct size
+        return result
 
     def get_nodal_vector_result(self, var, step, inc):
         """Get the vector of a variable at each node.

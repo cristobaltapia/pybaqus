@@ -129,7 +129,7 @@ class Element:
         """
         e_matrix = self._extrapol_matrix()
         s_n = e_matrix @ s_int
-        return s_n
+        return s_n, self._nodes
 
     def _extrapol_matrix(self):
         """Extrapolation matrix used to compute result variables at nodes."""
