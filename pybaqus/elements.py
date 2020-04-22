@@ -50,6 +50,10 @@ class Element:
     def model(self):
         return self._model
 
+    @property
+    def num(self):
+        return self._num
+
     def get_nodes(self):
         return self._nodes
 

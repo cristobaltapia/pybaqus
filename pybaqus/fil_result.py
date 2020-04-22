@@ -201,21 +201,29 @@ class FilResult:
         step = self._curr_step
         inc = self._curr_inc
 
+        # This flag the type of output: element (0), nodal (1), modal
+        # (2), or element set energy (3)
         flag_out = self._flag_output
 
         if flag_out == 0:
             n_elem = self._curr_elem_out
+            # Get number of integration points
+            int_points = self._curr_int_point
+            self.model.elements[n_elem].n_integ_points = int_points
 
             for ix, data in enumerate(record[2:], start=1):
                 self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc)
+
         elif flag_out == 1:
             n_node = self._curr_elem_out
 
             for ix, data in enumerate(record[2:], start=1):
                 self.model.add_nodal_output(n_node, f"{var}{ix}", data, step, inc)
+
         elif flag_out == 2:
             # TODO: implement modal output
             pass
+
         elif flag_out == 3:
             # TODO: implement set energy output
             pass

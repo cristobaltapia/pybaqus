@@ -44,7 +44,7 @@ class Model:
 
     def add_element(self, element):
         if element not in self.elements:
-            self.elements[element._num] = element
+            self.elements[element.num] = element
 
     def add_set(self, name, elements, s_type):
         """Add an element set.
@@ -355,7 +355,7 @@ class Model:
 
         for k in keys:
             # Get the nodal displacements
-            u = self._get_node_vector_result(k, step, inc)
+            u = self._get_node_vector_result(k, "U", step, inc)
             coords.append(nodes[k].coords + u * scale)
 
         coords_ar = np.array(coords)
