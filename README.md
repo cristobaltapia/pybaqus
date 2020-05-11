@@ -15,6 +15,7 @@ The following feeatures are either already implemented or planned:
 - [ ] Import 3D meshes _(should work, but have not tested it)_
 - [x] Import nodal results
 - [x] Import element results
+- [x] Element and node sets
 - [x] Extrapolate element results to nodes _(implemented for some elements)_
 - [ ] Interpolate element/nodal results to any point within the element considering the shape functions of the element
 - [ ] Import history output
