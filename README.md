@@ -54,7 +54,7 @@ res = open_fil("your_result.fil")
 Great!
 That was it. :)
 
-Now you have your results as a VTK object, wrapped by PyVista, and there's nothing that can go in your way to analyze your results with pure python.
+Now you have your results as a VTK object, wrapped by PyVista, and there's nothing that can get in your way to analyze your results with pure python.
 
 ### Plot the mesh
 
