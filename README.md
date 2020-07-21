@@ -20,9 +20,15 @@ The following feeatures are either already implemented or planned:
 - [ ] Interpolate element/nodal results to any point within the element considering the shape functions of the element
 - [ ] Import history output
 - [ ] Extrapolate element results from Gaussian points to element's nodes
-- [x] Compute stresses along paths considering the shape functions of the elements for the interpolation
+- [x] Compute stresses along paths
 - [ ] Compute section forces and moments
 - [ ] Implement functions to easily create animations
+
+# Installation
+
+```
+pip install git+https://github.com/cristobaltapia/pybaqus
+```
 
 # Quick-start
 
