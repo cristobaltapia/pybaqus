@@ -254,6 +254,9 @@ class Model:
             res_nodes[elem_nodes] += nodal_i
             counter[elem_nodes] += 1
 
+        # FIXME: Another hacky fix
+        counter[counter == 0] = np.nan
+
         result = res_nodes / counter
 
         # FIXME: output correct size
