@@ -104,4 +104,4 @@ Have fun!
 
 [1]: https://www.3ds.com/products-services/simulia/products/abaqus/
 [2]: https://vtk.org/
-[3]: https://pyvista.org/
+[3]: https://www.pyvista.org/
