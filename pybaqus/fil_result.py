@@ -31,6 +31,7 @@ class FilParser:
         8: ("_parse_elem_output", ["COORD"]),
         11: ("_parse_elem_output", ["S"]),
         21: ("_parse_elem_output", ["E"]),
+        5: ("_parse_elem_output", ["SDV"]),
         101: ("_parse_nodal_output", ["U"]),
         104: ("_parse_nodal_output", ["RF"]),
         106: ("_parse_nodal_output", ["CF"]),

@@ -37,6 +37,21 @@ class Model:
         self._curr_out_step: int = None
         self._curr_incr: int = None
         self._dimension: int = None
+        self._status: int = None
+
+    def set_status(self, n):
+        """Set the  SDV number controling the element deletion
+
+        Parameters
+        ----------
+        n : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        self._status = n
 
     def add_node(self, node):
         if node not in self.nodes:
@@ -305,6 +320,12 @@ class Model:
         keys = sorted(list(self.elements.keys()))
         keys_out = self.elem_output[step][inc][var].keys()
 
+        if self._status is not None:
+            status = self.elem_output[step][inc][f"SDV{self._status}"]
+            del_elem = [k for k, v in status.items() if v[0] == 0]
+            keys_out = [k for k in keys_out if k not in del_elem]
+            keys= [k for k in keys if k not in del_elem]
+
         results = self.elem_output[step][inc][var]
 
         list_res = [np.mean(results[k]) if k in keys_out else np.nan for k in keys]
@@ -451,6 +472,8 @@ class Model:
             Index of the increment within the step
         scale : flotat
             Scale to be applied to the deformations
+        status : int, None
+            Solution-dependent state variable that controls the element deletion
 
         Returns
         -------
@@ -459,7 +482,11 @@ class Model:
 
         """
         nodes = self.get_deformed_node_coords(step, inc, scale)
-        cells, offset, elem_t = self.get_cells()
+
+        if self._status:
+            status = self.elem_output[step][inc][f"SDV{self._status}"]
+
+        cells, offset, elem_t = self.get_cells(status=status)
 
         mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
 
