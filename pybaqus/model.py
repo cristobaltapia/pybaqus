@@ -206,20 +206,35 @@ class Model:
 
             self.steps[n].add_increment(inc_n, time_inc, step_time, load_prop)
 
-    def get_nodal_result(self, var, step, inc):
+    def get_nodal_result(self, var, step, inc, node_set=None, elem_set=None):
         """Get nodal results
 
         Parameters
         ----------
-        var : TODO
+        var : str
+            Output variable
+        step : int
+            Number of the Abaqus step.
+        inc : int
+            Number of the increment.
+        node_set : str, list
+        elem_set : str, list
 
         Returns
         -------
         TODO
 
         """
-        # FIXME: have this variable sorted globally
-        keys = sorted(list(self.nodes.keys()))
+        # Get the keys of the nodes in the set of nodes
+        if node_set is not None:
+            keys = sorted(self.get_nodes_from_set(node_set))
+        # Get elements belonging to the set
+        elif elem_set is not None:
+            elem_ids = self.get_elems_from_set(elem_set)
+            keys = sorted(self.get_nodes_from_elems(elem_ids))
+        else:
+            # FIXME: have this variable sorted globally
+            keys = sorted(list(self.nodes.keys()))
 
         if var in self.nodal_output[step][inc]:
             results = self.nodal_output[step][inc][var]
@@ -282,6 +297,8 @@ class Model:
 
         Parameters
         ----------
+        var : str
+            Output variable
         step : int
             Number of the Abaqus step.
         inc : int
@@ -297,7 +314,7 @@ class Model:
         """
         coords = list()
 
-        # Get the keys of the nodes in the 
+        # Get the keys of the nodes in the set of nodes
         if node_set is not None:
             keys = sorted(self.get_nodes_from_set(node_set))
         # Get elements belonging to the set
@@ -307,7 +324,6 @@ class Model:
         else:
             nodes = self.nodes
             keys = sorted(list(self.nodes.keys()))
-
 
         for k in keys:
             coords.append(self._get_node_vector_result(k, var, step, inc))
