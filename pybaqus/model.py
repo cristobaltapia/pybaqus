@@ -228,7 +228,7 @@ class Model:
         # Get the keys of the nodes in the set of nodes
         if node_set is not None:
             keys = sorted(self.get_nodes_from_set(node_set))
-            elem_ids = self.get_elems_from_nodes()
+            elem_ids = self.get_elems_from_nodes(keys)
         # Get elements belonging to the set
         elif elem_set is not None:
             elem_ids = self.get_elems_from_set(elem_set)
@@ -659,17 +659,26 @@ class Model:
 
         return node_ids
 
-    def get_elems_from_nodes(self, nodes):
+    def get_elems_from_nodes(self, node_ids):
         """Get element IDs from a set of nodes.
 
         Parameters
         ----------
-        nodes : list
+        node_ids : list
 
         Returns
         -------
         TODO
 
         """
-        pass
+        nodes = self.nodes
+        elem_ids = list()
+
+        for ni in node_ids:
+            elem_ids += nodes[ni].in_elements
+
+        # Remove duplicates
+        elems_ar = np.array(elem_ids, dtype=np.int)
+
+        return np.unique(elems_ar)
 
