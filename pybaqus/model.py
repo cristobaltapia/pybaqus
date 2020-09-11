@@ -277,13 +277,17 @@ class Model:
         # FIXME: output correct size
         return result
 
-    def get_nodal_vector_result(self, var, step, inc):
+    def get_nodal_vector_result(self, var, step, inc, node_set=None, elem_set=None):
         """Get the vector of a variable at each node.
 
         Parameters
         ----------
-        step : TODO
-        inc : TODO
+        step : int
+            Number of the Abaqus step.
+        inc : int
+            Number of the increment.
+        node_set : str, list
+        elem_set : str, list
 
         Returns
         -------
@@ -291,9 +295,19 @@ class Model:
             Nx3 array of displacements in each node
 
         """
-        nodes = self.nodes
-        keys = sorted(list(self.nodes.keys()))
         coords = list()
+
+        # Get the keys of the nodes in the 
+        if node_set is not None:
+            keys = sorted(self.get_nodes_from_set(node_set))
+        # Get elements belonging to the set
+        elif elem_set is not None:
+            elem_ids = self.get_elems_from_set(elem_set)
+            keys = sorted(self.get_nodes_from_elems(elem_ids))
+        else:
+            nodes = self.nodes
+            keys = sorted(list(self.nodes.keys()))
+
 
         for k in keys:
             coords.append(self._get_node_vector_result(k, var, step, inc))
@@ -318,6 +332,7 @@ class Model:
         """
         # FIXME: have this variable sorted globally
         keys = sorted(list(self.elements.keys()))
+
         keys_out = self.elem_output[step][inc][var].keys()
 
         if self._status is not None:
@@ -357,7 +372,7 @@ class Model:
 
         return coords_ar
 
-    def get_deformed_node_coords(self, step, inc, scale=1):
+    def get_deformed_node_coords(self, step, inc, scale=1, node_set=None, elem_set=None):
         """Get deformed node coordinates.
 
         Parameters
@@ -368,6 +383,8 @@ class Model:
             Index of the increment in the required step.
         scale : float
             Multiply the deformations by this number.
+        node_set : str, list
+        elem_set : str, list
 
         Returns
         -------
@@ -375,9 +392,17 @@ class Model:
             2D-Array with the node coordinates
 
         """
-        nodes = self.nodes
-        keys = sorted(list(self.nodes.keys()))
         coords = list()
+        nodes = self.nodes
+
+        # Get elements belonging to the set
+        if node_set is not None:
+            keys = sorted(self.get_nodes_from_set(node_set))
+        elif elem_set is not None:
+            elem_ids = self.get_elems_from_set(elem_set)
+            keys = sorted(self.get_nodes_from_elems(elem_ids))
+        else:
+            keys = sorted(list(self.nodes.keys()))
 
         for k in keys:
             # Get the nodal displacements
@@ -388,7 +413,7 @@ class Model:
 
         return coords_ar
 
-    def get_cells(self, elem_set=None):
+    def get_cells(self, elem_set=None, status=None):
         """Get the definition of cells for all elements.
 
         The format is the one required by VTK.
@@ -405,8 +430,22 @@ class Model:
         """
         elements = self.elements
 
+        # Element deletion is considered here
+        if status is not None:
+            def is_del(n_ele):
+                if n_ele in status.keys():
+                    if status[n_ele][0] != 0:
+                        return True
+                    else:
+                        return False
+                else:
+                    return True
+
+            # Don't consider the deleted elements for mesh
+            elements = {k: v for k, v in elements.items() if is_del(k) }
+
         if elem_set is not None:
-            elem_ids = self.element_sets[elem_set]
+            elem_ids = self.get_elems_from_set(elem_set)
             elements = {k: elements[k] for k in elem_ids}
 
         keys = sorted(list(elements.keys()))
@@ -530,4 +569,75 @@ class Model:
     def post_import_actions(self):
         """Execute some functions after importing all the records into the model."""
         pass
+
+    def get_elems_from_set(self, elem_set):
+        """Get the element IDs belonging to an elemnt set.
+
+        Parameters
+        ----------
+        elem_set : str, list
+            Name of the set or list with names of different sets.
+
+        Returns
+        -------
+        list :
+            List containing the element IDs present in the set(s).
+
+        """
+        if isinstance(elem_set, str):
+            elem_ids = self.element_sets[elem_set]
+        # Is list
+        else:
+            elem_ids = []
+            for set_i in elem_set:
+                elem_ids += self.element_sets[set_i]
+
+        return elem_ids
+
+    def get_nodes_from_elems(self, elems):
+        """Get nodal IDs from a list of element IDs.
+
+        Parameters
+        ----------
+        elems : list
+
+        Returns
+        -------
+        TODO
+
+        """
+        elements = self.elements
+
+        # Initialize list to store all the nodes
+        nodes = list()
+
+        for el in elems:
+            nodes += elements[el]._nodes
+
+        # Remove duplicates
+        nodes_ar = np.array(nodes, dtype=np.int)
+
+        return np.unique(nodes_ar)
+
+    def get_nodes_from_set(self, node_set):
+        """Get node IDs belonging to the node set.
+
+        Parameters
+        ----------
+        node_set : str, list
+
+        Returns
+        -------
+        TODO
+
+        """
+        if isinstance(node_set, str):
+            node_ids = self.node_sets[node_set]
+        # Is list
+        else:
+            node_ids = []
+            for set_i in node_set:
+                node_ids += self.node_sets[set_i]
+
+        return node_ids
 
