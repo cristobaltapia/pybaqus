@@ -228,6 +228,7 @@ class Model:
         # Get the keys of the nodes in the set of nodes
         if node_set is not None:
             keys = sorted(self.get_nodes_from_set(node_set))
+            elem_ids = self.get_elems_from_nodes()
         # Get elements belonging to the set
         elif elem_set is not None:
             elem_ids = self.get_elems_from_set(elem_set)
@@ -235,11 +236,12 @@ class Model:
         else:
             # FIXME: have this variable sorted globally
             keys = sorted(list(self.nodes.keys()))
+            elem_ids = self.elem_output[step][inc][var].keys()
 
         if var in self.nodal_output[step][inc]:
             results = self.nodal_output[step][inc][var]
         elif var in self.elem_output[step][inc]:
-            results = self._nodal_result_from_elements(var, step, inc)
+            results = self._nodal_result_from_elements(var, step, inc, elem_ids)
         else:
             # FIXME: handle errors properly some day
             print("Variable not present")
@@ -248,7 +250,7 @@ class Model:
 
         return np.array(list_res)
 
-    def _nodal_result_from_elements(self, var, step, inc):
+    def _nodal_result_from_elements(self, var, step, inc, elem_ids):
         """Get nodal results from element results by extrapolating.
 
         Shape functions are used to extrapolate to the nodes.
@@ -267,7 +269,7 @@ class Model:
         array
 
         """
-        keys_out = self.elem_output[step][inc][var].keys()
+        keys_out = elem_ids
         output = self.elem_output[step][inc][var]
 
         elements = self.elements
@@ -656,4 +658,18 @@ class Model:
                 node_ids += self.node_sets[set_i]
 
         return node_ids
+
+    def get_elems_from_nodes(self, nodes):
+        """Get element IDs from a set of nodes.
+
+        Parameters
+        ----------
+        nodes : list
+
+        Returns
+        -------
+        TODO
+
+        """
+        pass
 

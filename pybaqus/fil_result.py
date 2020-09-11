@@ -75,6 +75,7 @@ class FilParser:
         self._curr_surface: int = None
         self._tmp_surf: dict = dict()
         self._tmp_faces: dict = dict()
+        self._node_elems: dict = dict()
 
         self._parse_records()
 
@@ -117,6 +118,7 @@ class FilParser:
 
         # Execute post-read actions on the model
         self._post_parse_alls_surfaces()
+        self._reference_elems_in_nodes()
         self.model.post_import_actions()
 
     def _parse_element(self, record):
@@ -515,3 +517,11 @@ class FilParser:
 
         """
         print(f"Record key {record[1]} ({r_type}) not yet implemented!")
+
+    def _reference_elems_in_nodes(self):
+        """Add a list to each node with the elements using the node."""
+        model = self.model
+
+        for ni, elems in self._node_elems.items():
+            model.nodes[ni].in_elements = elems
+

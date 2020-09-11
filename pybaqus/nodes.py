@@ -25,6 +25,7 @@ class Node:
         self._ry: float = None
         self._rz: float = None
         self.model = model
+        self._in_elements = None
 
     @property
     def x(self):
@@ -53,6 +54,14 @@ class Node:
     @property
     def coords(self):
         return self._get_coords()
+
+    @property
+    def in_elements(self):
+        return self._in_elements
+
+    @in_elements.setter
+    def in_elements(self, x):
+        self._in_elements = x
 
     def _get_coords(self):
         print("This method needs to be redefined in subclass")
