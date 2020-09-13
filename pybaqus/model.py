@@ -294,6 +294,33 @@ class Model:
         # FIXME: output correct size
         return result
 
+    def get_time_history_result_from_node(self, var, node_id, steps="all"):
+        """Get results for a node duiring the whole simulation.
+
+        Parameters
+        ----------
+        var : TODO
+        node_id : TODO
+        steps : str, list, int
+            The steps used to retrieve the results. Default: 'all'
+
+        Returns
+        -------
+        np.array :
+            Results for the given variable `var`
+
+        """
+        steps = self.steps.keys()
+
+        # The first step is always zero (FIXME: maybe not always if there are
+        # prestresses.)
+        result = [0]
+        for step in steps:
+            for inc, val in self.nodal_output[step].items():
+                result += [val[var][node_id]]
+
+        return np.array(result)
+
     def get_nodal_vector_result(self, var, step, inc, node_set=None, elem_set=None):
         """Get the vector of a variable at each node.
 
@@ -390,7 +417,8 @@ class Model:
 
         return coords_ar
 
-    def get_deformed_node_coords(self, step, inc, scale=1, node_set=None, elem_set=None):
+    def get_deformed_node_coords(self, step, inc, scale=1, node_id=None,
+            node_set=None, elem_set=None):
         """Get deformed node coordinates.
 
         Parameters
@@ -419,6 +447,8 @@ class Model:
         elif elem_set is not None:
             elem_ids = self.get_elems_from_set(elem_set)
             keys = sorted(self.get_nodes_from_elems(elem_ids))
+        elif node_id is not None:
+            keys = [node_id]
         else:
             keys = sorted(list(self.nodes.keys()))
 
@@ -542,8 +572,9 @@ class Model:
 
         if self._status:
             status = self.elem_output[step][inc][f"SDV{self._status}"]
-
-        cells, offset, elem_t = self.get_cells(status=status)
+            cells, offset, elem_t = self.get_cells(status=status)
+        else:
+            cells, offset, elem_t = self.get_cells()
 
         mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
 
