@@ -134,6 +134,13 @@ class FilParser:
         e_number = record[2]
         nodes = record[4:]
 
+        # Add a reference to the node poinitng at the element
+        for n in nodes:
+            if n in self._node_elems.keys():
+                self._node_elems[n].append(e_number)
+            else:
+                self._node_elems[n] = [e_number]
+
         ElementClass = ELEMENTS[e_type]
 
         element = ElementClass(*nodes, num=e_number, model=self.model)
@@ -193,8 +200,6 @@ class FilParser:
         record : list
         var : str
             Name of the variable
-        which : str
-            Correspond the data to an element or node ("elem", "node")
 
         Returns
         -------
@@ -276,14 +281,14 @@ class FilParser:
         step = self._curr_step
         inc = self._curr_inc
 
-        if len(record) > 4:
+        if len(record) > 2:
             for ix, r_i in enumerate(record[3:], start=1):
                 self.model.add_nodal_output(
                     node=record[2], var=f"{var}{ix}", data=r_i, step=step, inc=inc
                 )
         else:
             self.model.add_nodal_output(
-                node=record[2], var=var, data=r_i[3], step=step, inc=inc
+                node=record[0], var=var, data=record[1], step=step, inc=inc
             )
 
         return 1
