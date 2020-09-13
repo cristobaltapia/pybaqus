@@ -572,9 +572,10 @@ class Model:
 
         if self._status:
             status = self.elem_output[step][inc][f"SDV{self._status}"]
-            cells, offset, elem_t = self.get_cells(status=status)
         else:
-            cells, offset, elem_t = self.get_cells()
+            status = None
+
+        cells, offset, elem_t = self.get_cells(status=status)
 
         mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
 
