@@ -365,6 +365,41 @@ class LineElement(Element):
         }
 
 
+class QuadraticHexahedron(Element):
+    """20 node quadratic brick element."""
+
+    def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15,
+                 n16, n17, n18, n19, n20, num, model):
+        super().__init__(num, model)
+        self._n_nodes = 20
+        self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15,
+                       n16, n17, n18, n19, n20]
+        self._elem_type = vtk.VTK_QUADRATIC_HEXAHEDRON
+
+        # Define faces connectivity
+        self._faces = {
+            1: [0, 1, 2, 3, 8, 9, 10, 11],
+            2: [4, 7, 6, 5, 15, 14, 13, 12],
+            3: [0, 4, 5, 1, 16, 12, 17, 8],
+            4: [1, 5, 6, 2, 17, 13, 18, 9],
+            5: [2, 6, 7, 3, 18, 14, 19, 10],
+            6: [3, 7, 4, 0, 19, 15, 16, 11],
+            # 1: [0, 8, 1, 9, 2, 10, 3, 11],
+            # 2: [4, 15, 7, 14, 6, 13, 5, 19],
+            # 3: [0, 16, 4, 12, 5, 17, 1, 8],
+            # 4: [1, 17, 5, 13, 6, 18, 2, 9],
+            # 5: [2, 18, 6, 14, 7, 19, 3, 10],
+            # 6: [3, 19, 7, 15, 4, 16, 0, 11],
+        }
+        self._face_shape = {
+            1: vtk.VTK_QUADRATIC_QUAD,
+            2: vtk.VTK_QUADRATIC_QUAD,
+            3: vtk.VTK_QUADRATIC_QUAD,
+            4: vtk.VTK_QUADRATIC_QUAD,
+            5: vtk.VTK_QUADRATIC_QUAD,
+            6: vtk.VTK_QUADRATIC_QUAD,
+        }
+
 ELEMENTS = {
     # Rigid
     "R2D2": LineElement,
@@ -389,5 +424,6 @@ ELEMENTS = {
     "C3D8R": Hexahedron,
     "C3D8RH": Hexahedron,
     "C3D8RS": Hexahedron,
+    "C3D20R": QuadraticHexahedron,
 }
 
