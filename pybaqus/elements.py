@@ -326,15 +326,15 @@ class Hexahedron(Element):
         super().__init__(num, model)
         self._n_nodes = 8
         self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8]
-        self._elem_type = vtk.VTK_PYRAMID
+        self._elem_type = vtk.VTK_HEXAHEDRON
 
         # Define faces connectivity
         self._faces = {
             1: [0, 1, 2, 3],
             2: [4, 7, 6, 5],
             3: [0, 4, 5, 1],
-            4: [1, 5, 6, 1],
-            5: [2, 6, 7, 4],
+            4: [1, 5, 6, 2],
+            5: [2, 6, 7, 3],
             6: [3, 7, 4, 0],
         }
         self._face_shape = {
