@@ -188,7 +188,8 @@ class Quad(Element):
                     [-0.5, 0.1339746, -0.5, 1.8660254],
                 ]
             )
-        elif self._n_integ_points == 1:
+        # One integration point
+        else:
             ext_mat = np.ones((4, 1))
 
         return ext_mat
