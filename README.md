@@ -12,7 +12,7 @@ However, basic operations like importing the mesh and the nodal and element resu
 The following feeatures are either already implemented or planned:
 
 - [x] Import 2D meshes
-- [ ] Import 3D meshes _(should work, but have not tested it)_
+- [x] Import 3D meshes
 - [x] Import nodal results
 - [x] Import element results
 - [x] Element and node sets
@@ -33,16 +33,18 @@ pip install git+https://github.com/cristobaltapia/pybaqus
 # Quick-start
 
 The first thing you need is to tell Abaqus that you want am ASCII `*.fil` result file.
-To get that you need to write the following lines in your `*.inp` file, right after the step definition (`*End Step`):
+To get that you need to write the following lines in your `*.inp` file, within the step definition (before the `*End Step` command) e.g.:
 
 ```
 ...
-*End Step
 *FILE FORMAT, ASCII
 *EL FILE
-*S, E, COORD
+S, E, COORD
 *NODE FILE
-*COORD, U
+COORD, U
+
+*End Step
+...
 ```
 
 You can specify different output variables (as long as they are available for the elements you are using, of course).
