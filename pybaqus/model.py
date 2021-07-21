@@ -551,7 +551,7 @@ class Model:
 
         return surface.mesh
 
-    def get_deformed_mesh(self, step, inc, scale=1):
+    def get_deformed_mesh(self, step, inc, scale=1, elem_set=None):
         """Construct the deformed mesh in step with scaled deformations.
 
         Parameters
@@ -578,7 +578,7 @@ class Model:
         else:
             status = None
 
-        cells, offset, elem_t = self.get_cells(status=status)
+        cells, offset, elem_t = self.get_cells(elem_set=elem_set, status=status)
 
         mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
 
