@@ -384,12 +384,12 @@ class Model:
             status = self.elem_output[step][inc][f"SDV{self._status}"]
             del_elem = [k for k, v in status.items() if v[0] == 0]
             keys_out = [k for k in keys_out if k not in del_elem]
-            keys= [k for k in keys if k not in del_elem]
+            keys = [k for k in keys if k not in del_elem]
 
         if elem_set is not None:
             set_elements = self.get_elems_from_set(elem_set)
             keys_out = [k for k in keys_out if k in set_elements]
-            keys= [k for k in keys if k in set_elements]
+            keys = [k for k in keys if k in set_elements]
 
         results = self.elem_output[step][inc][var]
 
