@@ -16,10 +16,9 @@ The following feeatures are either already implemented or planned:
 - [x] Import nodal results
 - [x] Import element results
 - [x] Element and node sets
-- [x] Extrapolate element results to nodes _(implemented for some elements)_
+- [x] Extrapolate element results from Gaussian points to nodes _(implemented for some elements)_
 - [ ] Interpolate element/nodal results to any point within the element considering the shape functions of the element
 - [ ] Import history output
-- [ ] Extrapolate element results from Gaussian points to element's nodes
 - [x] Compute stresses along paths
 - [ ] Compute section forces and moments
 - [ ] Implement functions to easily create animations
