@@ -83,8 +83,8 @@ class Surface:
         new_nodes = np.array([u_nodes[k].coords for k in u_nodes.keys()])
 
         list_nodes = [self._surf_data(fi, new_keys) for fi in faces]
-        offset = [fi._n_nodes + 1 for fi in faces]
-        elem_type = [fi.element_type + 1 for fi in faces]
+        offset = [(fi._n_nodes + 1) for fi in faces]
+        elem_type = [fi.element_type for fi in faces]
 
         ar_cells = np.array(list_nodes)
         ar_offset = np.cumsum(np.array(offset, dtype=int)) - offset[0]
