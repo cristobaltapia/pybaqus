@@ -2,7 +2,6 @@
 Implementation of faces
 """
 import numpy as np
-import vtk
 
 from pyvista import UnstructuredGrid
 
