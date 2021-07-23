@@ -9,7 +9,7 @@ E-mail: crtapia@gmail.com
 
 
 def get_ascii_job(job_obj):
-    """Configure Job to save results in the ASCII format (*.fil)
+    """Configure Job to save results in the ASCII format (*.fil).
 
     Parameters
     ----------
@@ -35,10 +35,12 @@ def get_ascii_job(job_obj):
             else:
                 inp_file.write(l)
 
-    job_ascii = mdb.JobFromInputFile(
-        name=job_obj.name, inputFileName=job_bsh.name + ".inp", type=ANALYSIS, memory=90,
-        memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, explicitPrecision=SINGLE,
-        nodalOutputPrecision=SINGLE, userSubroutine=job_obj.userSubroutine,
-        scratch=job_obj.scratch, multiprocessingMode=DEFAULT, numCpus=job_obj.numCpus)
+    job_ascii = mdb.JobFromInputFile(name=job_obj.name, inputFileName=job_obj.name + ".inp",
+                                     type=ANALYSIS, memory=90, memoryUnits=PERCENTAGE,
+                                     getMemoryFromAnalysis=True, explicitPrecision=SINGLE,
+                                     nodalOutputPrecision=SINGLE,
+                                     userSubroutine=job_obj.userSubroutine,
+                                     scratch=job_obj.scratch, multiprocessingMode=DEFAULT,
+                                     numCpus=job_obj.numCpus, numDomains=job_obj.numDomains)
 
     return job_ascii
