@@ -83,18 +83,9 @@ class Surface:
         new_keys = {old: new for new, old in enumerate(u_nodes.keys())}
         new_nodes = np.array([u_nodes[k].coords for k in u_nodes.keys()])
 
-        list_nodes = list()
-        offset = list()
-        elem_type = list()
-
-        for face in faces:
-            global_nodes = face.get_nodes()
-            local_nodes = [new_keys[k] for k in global_nodes]
-
-            nodes = [face._n_nodes] + local_nodes
-            list_nodes.extend(nodes)
-            offset.append(face._n_nodes + 1)
-            elem_type.append(face.element_type)
+        list_nodes = [self._surf_data(fi, new_keys) for fi in faces]
+        offset = [fi._n_nodes + 1 for fi in faces]
+        elem_type = [fi.element_type + 1 for fi in faces]
 
         ar_cells = np.array(list_nodes)
         ar_offset = np.cumsum(np.array(offset, dtype=int)) - offset[0]
@@ -111,15 +102,10 @@ class Surface:
             Dictionary with the used nodes.
 
         """
-        nodes = list()
-        for face in self._faces:
-            nodes.extend(face.get_nodes())
-
-        # Remove duplicates
-        nodes = list(set(nodes))
+        nodes = np.unique(np.array([fi.get_nodes() for fi in self._faces]))
 
         all_nodes = self._model.nodes
-        used_nodes = {k: n for k, n in all_nodes.items() if k in nodes}
+        used_nodes = {k: all_nodes[k] for k in nodes}
 
         return used_nodes
 
@@ -139,6 +125,24 @@ class Surface:
         self._mesh = mesh
 
         return self._mesh
+
+    def _surf_data(self, face, new_keys):
+        """Get nodes, offset and element type of face element.
+
+        Parameters
+        ----------
+        face : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        global_nodes = face.get_nodes()
+        local_nodes = [new_keys[k] for k in global_nodes]
+
+        nodes = [face._n_nodes] + local_nodes
+        return nodes
 
 
 class RigidSurface(Surface):
