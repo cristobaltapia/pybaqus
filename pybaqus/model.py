@@ -378,7 +378,8 @@ class Model:
         # FIXME: have this variable sorted globally
         keys = sorted(list(self.elements.keys()))
 
-        keys_out = self.elem_output[step][inc][var].keys()
+        # Elements for which the output variable exists
+        keys_out = set(self.elem_output[step][inc][var].keys())
 
         if self._status is not None:
             status = self.elem_output[step][inc][f"SDV{self._status}"]
@@ -388,8 +389,15 @@ class Model:
 
         if elem_set is not None:
             set_elements = self.get_elems_from_set(elem_set)
-            keys_out = [k for k in keys_out if k in set_elements]
-            keys = [k for k in keys if k in set_elements]
+
+            def filter_elements(elem):
+                if elem in set_elements:
+                    return True
+                else:
+                    return False
+
+            keys_out = filter(filter_elements, keys_out)
+            keys = filter(filter_elements, keys)
 
         results = self.elem_output[step][inc][var]
 
@@ -650,7 +658,7 @@ class Model:
             for set_i in elem_set:
                 elem_ids += self.element_sets[set_i]
 
-        return elem_ids
+        return set(elem_ids)
 
     def get_nodes_from_elems(self, elems):
         """Get nodal IDs from a list of element IDs.
