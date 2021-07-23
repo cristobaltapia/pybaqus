@@ -369,7 +369,7 @@ class FilParser:
         # (k + 1): because the dof's start at 1
         # (val -1): because they will be reference to a list, which is 0-indexed
         self._dof_map = {
-            (k + 1): (val - 1) for k, val in enumerate(active_dof) if val != 0
+            (k + 1): (val - 1) if val != 0 else 0 for k, val in enumerate(active_dof)
         }
 
         # Process all nodes
