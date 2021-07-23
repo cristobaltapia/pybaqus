@@ -8,7 +8,7 @@ E-mail: crtapia@gmail.com
 """
 
 
-def get_ascii_result_file(job_obj):
+def get_ascii_job(job_obj):
     """Configure Job to save results in the ASCII format (*.fil)
 
     Parameters
