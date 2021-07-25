@@ -54,11 +54,11 @@ class Model:
         self._status = n
 
     def add_node(self, node):
-        if node not in self.nodes:
+        if node._num not in self.nodes:
             self.nodes[node._num] = node
 
     def add_element(self, element):
-        if element not in self.elements:
+        if element.num not in self.elements:
             self.elements[element.num] = element
 
     def add_set(self, name, elements, s_type):
