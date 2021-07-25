@@ -445,6 +445,7 @@ class QuadraticHexahedron(Element):
             6: vtk.VTK_QUADRATIC_QUAD,
         }
 
+
 ELEMENTS = {
     # Rigid
     "R2D2": LineElement,
