@@ -318,6 +318,31 @@ class Wedge(Element):
             5: vtk.VTK_QUAD,
         }
 
+    def _extrapol_matrix(self):
+        """Extrapolation matrix.
+
+        Returns
+        -------
+        TODO
+
+        """
+        if self._n_integ_points == 2:
+            ext_mat = np.array(
+                [
+                    [-6.830127018922193,-6.830127018922193],
+                    [-2.732050807568877,-2.732050807568877],
+                    [4.098076211353316,4.098076211353316],
+                    [1.830127018922193,1.830127018922193],
+                    [-0.3660254037844386,-0.3660254037844386],
+                    [-1.0980762113533158,-1.0980762113533158],
+                ]
+            )
+        # One integration point
+        else:
+            ext_mat = np.ones((1, 1))
+
+        return ext_mat
+
 
 class Hexahedron(Element):
     """8 node brick element."""
