@@ -550,7 +550,7 @@ class Model:
 
         return self.mesh
 
-    def get_surface(self, name, step=None, inc=None, scale=1):
+    def get_surface(self, name, return_nodes=False, step=None, inc=None, scale=1):
         """Get mesh of surface.
 
         Parameters
@@ -565,7 +565,11 @@ class Model:
         """
         surface = self.surfaces[name]
 
-        return surface.mesh
+        if return_nodes:
+            return surface.mesh, surface.get_used_nodes().keys()
+        else:
+            return surface.mesh
+
 
     def get_deformed_mesh(self, step, inc, scale=1, elem_set=None):
         """Construct the deformed mesh in step with scaled deformations.
