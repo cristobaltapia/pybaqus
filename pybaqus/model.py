@@ -206,7 +206,7 @@ class Model:
 
             self.steps[n].add_increment(inc_n, time_inc, step_time, load_prop)
 
-    def get_nodal_result(self, var, step, inc, node_set=None, elem_set=None):
+    def get_nodal_result(self, var, step, inc, node_set=None, elem_set=None, node_ids=None):
         """Get nodal results
 
         Parameters
@@ -233,6 +233,9 @@ class Model:
         elif elem_set is not None:
             elem_ids = self.get_elems_from_set(elem_set)
             keys = sorted(self.get_nodes_from_elems(elem_ids))
+        elif node_ids is not None:
+            elem_ids = self.get_elems_from_nodes(node_ids)
+            keys = sorted(node_ids)
         else:
             # FIXME: have this variable sorted globally
             keys = sorted(list(self.nodes.keys()))
