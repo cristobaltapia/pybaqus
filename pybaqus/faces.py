@@ -2,6 +2,7 @@
 Implementation of faces
 """
 import numpy as np
+from copy import copy
 
 from pyvista import UnstructuredGrid
 
@@ -38,9 +39,9 @@ class Surface:
 
         """
         if self._mesh is not None:
-            return self._mesh
+            return copy(self._mesh)
         else:
-            return self._gen_mesh()
+            return copy(self._gen_mesh())
 
     def __str__(self):
         text = (
