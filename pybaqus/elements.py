@@ -35,6 +35,7 @@ class Element:
         self._faces: dict = dict()
         self._face_shape: dict = dict()
         self._n_integ_points: int = None
+        self.map_node = np.vectorize(self._map_node)
 
     @property
     def elem_type(self):
@@ -70,13 +71,41 @@ class Element:
 
         return nodes
 
-    def get_cell(self):
+    def get_cell(self, kmap=None):
+        """Assemble cell array.
+
+        Parameters
+        ----------
+        kmap : dict
+            Map origianl node ids to new id
+
+        """
         # Get nodes
-        nodes = np.array(self._nodes) - 1
+        nodes = np.array(self._nodes)
+
+        if kmap:
+            nodes = self.map_node(kmap, nodes)
+
+        nodes -= 1
 
         cell = np.array([self._n_nodes, *nodes], dtype=int)
 
         return cell
+
+    def _map_node(self, kmap, old_id):
+        """Map an old id to anew id.
+
+        Parameters
+        ----------
+        old_id : TODO
+        new_id : TODO
+
+        Returns
+        -------
+        TODO
+
+        """
+        return kmap[old_id]
 
     def get_face(self, face):
         """Get a specific face of the element.

@@ -414,30 +414,55 @@ class Model:
         """Add metadata to the model."""
         self.metadata[metadata[0]] = metadata[1]
 
-    def get_node_coords(self, node_set=None, node_id=None):
+    def get_node_coords(self, node_set=None, elem_set=None, node_id=None, return_map=False):
         """Get a list with the node coordinates.
+
+        Return
+        ------
+        coords : array
+            An array of size (n, 3), where n is the number of nodes
+        kmap : dict
+            If either `node_set`, `elem_set` or `node_id` are given and `return_map` is
+            True, then a dictionary is returned mapping the new node ids to the original
+            node ids.
         """
 
         nodes = self.nodes
 
         if node_set is not None:
-            keys = sorted(self.get_nodes_from_set(node_set))
+            old_keys = sorted(self.get_nodes_from_set(node_set))
+            keys = np.arange(1, len(old_keys) + 1, 1)
+            # Map new indices to old indices
+            kmap = {k: ix for k, ix in zip(keys, old_keys)}
         elif node_id is not None:
-            keys = [node_id]
+            old_keys = sorted([node_id])
+            keys = np.arange(1, len(old_keys) + 1, 1)
+            # Map new indices to old indices
+            kmap = {k: ix for k, ix in zip(keys, old_keys)}
+        elif elem_set is not None:
+            elems = self.get_elems_from_set(elem_set)
+            old_keys = sorted(self.get_nodes_from_elems(elems))
+            keys = np.arange(1, len(old_keys) + 1, 1)
+            # Map new indices to old indices
+            kmap = {k: ix for k, ix in zip(keys, old_keys)}
         else:
             keys = sorted(list(nodes.keys()))
+            kmap = {k: k for k in keys}
 
-        coords = list()
+        coords = np.empty((len(keys), 3))
 
         for k in keys:
-            coords.append(nodes[k].coords)
+            coords[k - 1, :] = nodes[kmap[k]].coords
 
         coords_ar = np.array(coords)
 
-        return coords_ar
+        if return_map:
+            return coords_ar, kmap
+        else:
+            return coords_ar
 
-    def get_deformed_node_coords(self, step, inc, scale=1, node_id=None,
-            node_set=None, elem_set=None):
+    def get_deformed_node_coords(self, step, inc, scale=1, node_id=None, node_set=None,
+                                 elem_set=None):
         """Get deformed node coordinates.
 
         Parameters
@@ -457,28 +482,13 @@ class Model:
             2D-Array with the node coordinates
 
         """
-        coords = list()
-        nodes = self.nodes
+        coords, kmap = self.get_node_coords(node_id=node_id, node_set=node_set,
+                                            elem_set=elem_set, return_map=True)
 
-        # Get elements belonging to the set
-        if node_set is not None:
-            keys = sorted(self.get_nodes_from_set(node_set))
-        elif elem_set is not None:
-            elem_ids = self.get_elems_from_set(elem_set)
-            keys = sorted(self.get_nodes_from_elems(elem_ids))
-        elif node_id is not None:
-            keys = [node_id]
-        else:
-            keys = sorted(list(self.nodes.keys()))
+        for k in range(1, np.shape(coords)[0] + 1, 1):
+            coords[k - 1, :] += self._get_node_vector_result(kmap[k], "U", step, inc) * scale
 
-        for k in keys:
-            # Get the nodal displacements
-            u = self._get_node_vector_result(k, "U", step, inc)
-            coords.append(nodes[k].coords + u * scale)
-
-        coords_ar = np.array(coords)
-
-        return coords_ar
+        return coords
 
     def get_cells(self, elem_set=None, status=None):
         """Get the definition of cells for all elements.
@@ -499,6 +509,7 @@ class Model:
 
         # Element deletion is considered here
         if status is not None:
+
             def is_del(n_ele):
                 if n_ele in status.keys():
                     if status[n_ele][0] != 0:
@@ -513,7 +524,12 @@ class Model:
 
         if elem_set is not None:
             elem_ids = self.get_elems_from_set(elem_set)
+            nodes = self.get_nodes_from_elems(elem_ids)
+            new_node_ids = np.arange(1, len(nodes) + 1, 1)
+            kmap = {k: ix for k, ix in zip(nodes, new_node_ids)}
             elements = {k: elements[k] for k in elem_ids}
+        else:
+            kmap = None
 
         keys = sorted(list(elements.keys()))
 
@@ -522,7 +538,7 @@ class Model:
         elem_type = list()
 
         for el_i in keys:
-            cells.extend(elements[el_i].get_cell())
+            cells.extend(elements[el_i].get_cell(kmap=kmap))
             offset.append(len(elements[el_i]._nodes))
             elem_type.append(elements[el_i]._elem_type)
 
@@ -541,7 +557,7 @@ class Model:
             VTK mesh unstructured grid
 
         """
-        nodes = self.get_node_coords()
+        nodes = self.get_node_coords(elem_set=elem_set)
         cells, offset, elem_t = self.get_cells(elem_set)
 
         mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
@@ -591,7 +607,7 @@ class Model:
             VTK mesh unstructured grid
 
         """
-        nodes = self.get_deformed_node_coords(step, inc, scale)
+        nodes = self.get_deformed_node_coords(step, inc, scale, elem_set=elem_set)
 
         if self._status:
             status = self.elem_output[step][inc][f"SDV{self._status}"]
