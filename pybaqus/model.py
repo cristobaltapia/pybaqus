@@ -21,7 +21,6 @@ class Model:
     surfaces : dict
 
     """
-
     def __init__(self):
         self.nodes: dict = dict()
         self.elements: dict = dict()
@@ -520,7 +519,7 @@ class Model:
                     return True
 
             # Don't consider the deleted elements for mesh
-            elements = {k: v for k, v in elements.items() if is_del(k) }
+            elements = {k: v for k, v in elements.items() if is_del(k)}
 
         if elem_set is not None:
             elem_ids = self.get_elems_from_set(elem_set)
@@ -586,7 +585,6 @@ class Model:
         else:
             return surface.mesh
 
-
     def get_deformed_mesh(self, step, inc, scale=1, elem_set=None):
         """Construct the deformed mesh in step with scaled deformations.
 
@@ -643,15 +641,17 @@ class Model:
         nodal_output = self.nodal_output[step][inc]
 
         if self._dimension == 3:
-            u = np.array(
-                [
-                    nodal_output[f"{var}1"][n],
-                    nodal_output[f"{var}2"][n],
-                    nodal_output[f"{var}3"][n],
-                ]
-            )
+            u = np.array([
+                nodal_output[f"{var}1"][n],
+                nodal_output[f"{var}2"][n],
+                nodal_output[f"{var}3"][n],
+            ])
         else:
-            u = np.array([nodal_output[f"{var}1"][n], nodal_output[f"{var}2"][n], 0,])
+            u = np.array([
+                nodal_output[f"{var}1"][n],
+                nodal_output[f"{var}2"][n],
+                0,
+            ])
 
         return u
 
@@ -752,4 +752,3 @@ class Model:
         elems_ar = np.array(elem_ids, dtype=np.int)
 
         return np.unique(elems_ar)
-
