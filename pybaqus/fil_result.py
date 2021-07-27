@@ -62,6 +62,7 @@ class FilParser:
         self._curr_n_int_points: int = None
         self._curr_step: int = None
         self._curr_inc: int = None
+        self._curr_loc_id: int = None
         self._flag_output: int = None
         self._output_request_set: str = None
         self._output_elem_type: str = None
