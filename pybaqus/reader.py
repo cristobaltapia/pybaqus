@@ -3,8 +3,6 @@ Utilities to read the ASCII *.fil files generates by abaqus.
 """
 import re
 
-import numpy as np
-
 from .fil_result import FilParser
 
 
