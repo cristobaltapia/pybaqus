@@ -122,13 +122,16 @@ class Model:
         face = Face(element, face_info["face"], face_info["nodes"])
         self.surfaces[surface].add_face(face)
 
-    def add_elem_output(self, elem, var, data, step, inc):
+    def add_elem_output(self, elem, var, data, step, inc, intpnt):
         """Add element output data
 
         Parameters
         ----------
         var : TODO
         data : TODO
+        intpnt : int
+            Integration point number if the results contain integration point data.
+            TODO: handle elements with different outputs.
 
         Returns
         -------
@@ -139,9 +142,10 @@ class Model:
             self.elem_output[step][inc][var] = dict()
 
         if elem not in self.elem_output[step][inc][var]:
-            self.elem_output[step][inc][var][elem] = list()
+            etype = self.elements[elem].elem_code
+            self.elem_output[step][inc][var][elem] = np.empty((N_INT_PNTS[etype], 1), dtype=np.float64)
 
-        self.elem_output[step][inc][var][elem].append(data)
+        self.elem_output[step][inc][var][elem][intpnt - 1] = data
 
     def add_nodal_output(self, node, var, data, step, inc):
         """Add nodal output results
@@ -286,7 +290,7 @@ class Model:
             var_i = output[ix]
             # Returns extrapolated variables and respective node labels
             nodal_i, elem_nodes = elements[ix].extrapolate_to_nodes(var_i)
-            res_nodes[elem_nodes] += nodal_i
+            res_nodes[elem_nodes] += nodal_i.flatten()
             counter[elem_nodes] += 1
 
         # FIXME: Another hacky fix

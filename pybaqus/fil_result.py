@@ -7,7 +7,7 @@ import numpy as np
 
 from .model import Model
 from .nodes import Node2D, Node3D
-from .elements import ELEMENTS
+from .elements import ELEMENTS, N_INT_PNTS
 
 
 class FilParser:
@@ -144,6 +144,7 @@ class FilParser:
         ElementClass = ELEMENTS[e_type]
 
         element = ElementClass(*nodes, num=e_number, model=self.model, code=e_type)
+        element.n_integ_points = N_INT_PNTS[e_type]
         self.model.add_element(element)
 
     def _parse_node(self, record):
@@ -209,19 +210,18 @@ class FilParser:
         step = self._curr_step
         inc = self._curr_inc
 
-        # This flag the type of output: element (0), nodal (1), modal
+        # This flags the type of output: element (0), nodal (1), modal
         # (2), or element set energy (3)
         flag_out = self._flag_output
 
         if flag_out == 0:
             n_elem = self._curr_elem_out
             # Get number of integration points
-            int_points = self._curr_n_int_points
-            self.model.elements[n_elem].n_integ_points = int_points
+            int_point = self._curr_n_int_point
 
             # Append all the records
             for ix, data in enumerate(record[2:], start=1):
-                self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc)
+                self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc, int_point)
 
         elif flag_out == 1:
             n_node = self._curr_elem_out
@@ -233,7 +233,8 @@ class FilParser:
             # TODO: implement modal output
             pass
 
-        elif flag_out == 3:
+        # flag_out == 3:
+        else:
             # TODO: implement set energy output
             pass
 
@@ -252,6 +253,13 @@ class FilParser:
         num = record[2]
         n_int_point = record[3]
         n_sec_point = record[4]
+        # loc_id:
+        # - 0 if the subsequent records contain data at an integration point;
+        # - 1 if the subsequent records contain values at the centroid of the element;
+        # - 2 if the subsequent records contain data at the nodes of the element;
+        # - 3 if the subsequent records contain data associated with rebar within an element;
+        # - 4 if the subsequent records contain nodal averaged values;
+        # - 5 if the subsequent records contain values associated with the whole element
         loc_id = record[5]
         name_rebar = record[6]
         n_direct_stresses = record[7]
@@ -262,8 +270,8 @@ class FilParser:
         # Append the element/node number to the list of elements/nodes which
         # data is going to be read next
         self._curr_elem_out = num
-        self._curr_n_int_points = n_int_point
-        self._curr_int_point = 0
+        self._curr_n_int_point = n_int_point
+        self._curr_loc_id = loc_id
         self._curr_int_point_data = dict()
 
     def _parse_nodal_output(self, record, var):
