@@ -501,6 +501,7 @@ ELEMENTS = {
     "R3D4": Quad,
     # 2D Continuum
     "S4R": Quad,
+    "CPS4": Quad,
     "CPS4R": Quad,
     "CPE3": Triangle,
     "CPE3H": Triangle,
@@ -522,6 +523,18 @@ ELEMENTS = {
 }
 
 N_INT_PNTS = {
+    # Rigid
+    "R2D2": 0,
+    "R3D3": 0,
+    "R3D4": 0,
+    # 2D Continuum
+    "S4R": 1,
+    "CPS4": 4,
+    "CPS4R": 1,
+    "CPE3": 1,
+    "CPE3H": 1,
+    "CPS3": 1,
+    "CPEG3": 1,
     # 3D Continuum
     "C3D4": 1,
     "C3D4H": 1,
