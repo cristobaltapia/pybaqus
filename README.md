@@ -37,7 +37,7 @@ To get that you need to write the following lines in your `*.inp` file, within t
 ```
 ...
 *FILE FORMAT, ASCII
-*EL FILE
+*EL FILE, DIRECTIONS=YES
 S, E, COORD
 *NODE FILE
 COORD, U
