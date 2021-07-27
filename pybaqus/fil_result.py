@@ -95,18 +95,7 @@ class FilParser:
             m_rec = re.findall(pattern, r_i)
 
             # Get each variable
-            vars_i = list()
-
-            for v_i in m_rec:
-                # For each variable three matches are made (why?), so we need to
-                # take the one with the data (the only one which is not am empty
-                # string)
-                if v_i[0] != "":
-                    vars_i.append(int(v_i[0]))
-                elif v_i[1] != "":
-                    vars_i.append(float(v_i[1].replace("D", "E")))
-                else:
-                    vars_i.append(v_i[2])
+            vars_i = list(map(self._convert_record, m_rec))
 
             # Process record
             key = vars_i[1]
@@ -121,6 +110,18 @@ class FilParser:
         self._post_parse_alls_surfaces()
         self._reference_elems_in_nodes()
         self.model.post_import_actions()
+
+    def _convert_record(self, record):
+        """Convert one record to a list of numbers and strings."""
+        # For each variable three matches are made (why?), so we need to
+        # take the one with the data (the only one which is not am empty
+        # string)
+        if record[0] != "":
+            return  int(record[0])
+        elif record[1] != "":
+            return float(record[1].replace("D", "E"))
+        else:
+            return record[2]
 
     def _parse_element(self, record):
         """Parse the data of an element
