@@ -5,6 +5,7 @@ import numpy as np
 from pyvista import UnstructuredGrid
 from .step import Step
 from .faces import RigidSurface, DeformableSurface, Face
+from .elements import N_INT_PNTS
 
 
 class Model:

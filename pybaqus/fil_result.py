@@ -143,7 +143,7 @@ class FilParser:
 
         ElementClass = ELEMENTS[e_type]
 
-        element = ElementClass(*nodes, num=e_number, model=self.model)
+        element = ElementClass(*nodes, num=e_number, model=self.model, code=e_type)
         self.model.add_element(element)
 
     def _parse_node(self, record):

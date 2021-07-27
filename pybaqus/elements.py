@@ -16,8 +16,7 @@ class Element:
     model : `obj`:Model
 
     """
-
-    def __init__(self, num, model):
+    def __init__(self, num, model, code):
         """TODO: to be defined.
 
         Parameters
@@ -30,6 +29,7 @@ class Element:
         self._nodes: list = None
         self._n_nodes: int = None
         self._connectivity: list = None
+        self._elem_code: str = code
         self._model = model
         self._elem_type = None
         self._faces: dict = dict()
@@ -46,6 +46,10 @@ class Element:
 
         """
         return self._elem_type
+
+    @property
+    def elem_code(self):
+        return self._elem_code
 
     @property
     def model(self):
@@ -175,9 +179,8 @@ class Element:
 
 class Quad(Element):
     """4-node rectangular element."""
-
-    def __init__(self, n1, n2, n3, n4, num, model):
-        super().__init__(num, model)
+    def __init__(self, n1, n2, n3, n4, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 4
         self._nodes = [n1, n2, n3, n4]
         self._elem_type = vtk.VTK_QUAD
@@ -246,9 +249,8 @@ class Quad(Element):
 
 class Triangle(Element):
     """3-node triangular element."""
-
-    def __init__(self, n1, n2, n3, num, model):
-        super().__init__(num, model)
+    def __init__(self, n1, n2, n3, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 3
         self._nodes = [n1, n2, n3]
         self._elem_type = vtk.VTK_TRIANGLE
@@ -281,9 +283,8 @@ class Triangle(Element):
 
 class Tetra(Element):
     """4 node tetrahedron elements"""
-
-    def __init__(self, n1, n2, n3, n4, num, model):
-        super().__init__(num, model)
+    def __init__(self, n1, n2, n3, n4, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 4
         self._nodes = [n1, n2, n3, n4]
         self._elem_type = vtk.VTK_TETRA
@@ -299,9 +300,8 @@ class Tetra(Element):
 
 class Pyramid(Element):
     """5 node pyramid element."""
-
-    def __init__(self, n1, n2, n3, n4, n5, num, model):
-        super().__init__(num, model)
+    def __init__(self, n1, n2, n3, n4, n5, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 5
         self._nodes = [n1, n2, n3, n4, n5]
         self._elem_type = vtk.VTK_PYRAMID
@@ -324,9 +324,8 @@ class Pyramid(Element):
 
 class Wedge(Element):
     """6 node triangular prism element."""
-
-    def __init__(self, n1, n2, n3, n4, n5, n6, num, model):
-        super().__init__(num, model)
+    def __init__(self, n1, n2, n3, n4, n5, n6, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 6
         self._nodes = [n1, n2, n3, n4, n5, n6]
         self._elem_type = vtk.VTK_WEDGE
@@ -375,9 +374,8 @@ class Wedge(Element):
 
 class Hexahedron(Element):
     """8 node brick element."""
-
-    def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, num, model):
-        super().__init__(num, model)
+    def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 8
         self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8]
         self._elem_type = vtk.VTK_HEXAHEDRON
@@ -429,9 +427,8 @@ class Hexahedron(Element):
 
 class LineElement(Element):
     """2 node line element."""
-
-    def __init__(self, n1, n2, num, model):
-        super().__init__(num, model)
+    def __init__(self, n1, n2, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 2
         self._nodes = [n1, n2]
         self._elem_type = vtk.VTK_LINE
@@ -449,8 +446,8 @@ class QuadraticHexahedron(Element):
     """20 node quadratic brick element."""
 
     def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15,
-                 n16, n17, n18, n19, n20, num, model):
-        super().__init__(num, model)
+                 n16, n17, n18, n19, n20, num, model, code):
+        super().__init__(num, model, code)
         self._n_nodes = 20
         self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15,
                        n16, n17, n18, n19, n20]
@@ -502,3 +499,15 @@ ELEMENTS = {
     "C3D20R": QuadraticHexahedron,
 }
 
+N_INT_PNTS = {
+    # 3D Continuum
+    "C3D4": 1,
+    "C3D4H": 1,
+    "C3D6": 2,
+    "C3D6H": 2,
+    "C3D8": 8,
+    "C3D8H": 1,
+    "C3D8R": 1,
+    "C3D8RS": 1,
+    "C3D20R": 8,
+}
