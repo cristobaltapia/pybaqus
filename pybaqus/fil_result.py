@@ -490,7 +490,6 @@ class FilParser:
 
             elif surf["type"] == "deformable":
                 # Get name
-                print(surf)
                 name = self._label_cross_ref[ix]
                 dim = surf["dimension"]
                 master = surf["master names"]
