@@ -472,7 +472,7 @@ class FilParser:
                 }
 
     def _post_parse_alls_surfaces(self):
-        """Process all the durfaces after reading all records."""
+        """Process all the surfaces after reading all records."""
         surfaces = self._tmp_surf
         faces = self._tmp_faces
         model = self.model
