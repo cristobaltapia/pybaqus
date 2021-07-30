@@ -107,7 +107,7 @@ class FilParser:
                 print(f"Key {key} not defined!")
 
         # Execute post-read actions on the model
-        self._post_parse_alls_surfaces()
+        self._post_parse_all_surfaces()
         self._reference_elems_in_nodes()
         self.model.post_import_actions()
 
@@ -471,7 +471,7 @@ class FilParser:
                     "reference point": ref_label,
                 }
 
-    def _post_parse_alls_surfaces(self):
+    def _post_parse_all_surfaces(self):
         """Process all the surfaces after reading all records."""
         surfaces = self._tmp_surf
         faces = self._tmp_faces
