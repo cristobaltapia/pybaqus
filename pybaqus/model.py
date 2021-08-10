@@ -406,6 +406,18 @@ class Model:
             keys_out = filter(filter_elements, keys_out)
             keys = filter(filter_elements, keys)
 
+        elif elem_id is not None:
+            set_elements = set(elem_id)
+
+            def filter_elements(elem):
+                if elem in set_elements:
+                    return True
+                else:
+                    return False
+
+            keys_out = set(elem_id)
+            keys = elem_id
+
         results = self.elem_output[step][inc][var]
 
         list_res = [np.mean(results[k]) if k in keys_out else np.nan for k in keys]
@@ -413,6 +425,34 @@ class Model:
         ar_results = np.array(list_res)
 
         return ar_results
+
+    def get_surface_result(self, var, step, inc, surf_name):
+        """Get element result on a given surface.
+
+        Parameters
+        ----------
+        var : str
+            Output variable.
+        step : int
+            Simulation step.
+        inc : int
+            Increment within the step.
+        surface : str
+            Name of the surface.
+
+        Returns
+        -------
+        TODO
+
+        """
+        # Get underlying element numbers
+        surf = self.surfaces[surf_name]
+        e_nums = [face._element.num for face in surf._faces]
+
+        # Retrieve element output
+        out = self.get_element_result(var, step, inc, elem_id=e_nums)
+
+        return out
 
     def add_metadata(self, metadata):
         """Add metadata to the model."""
