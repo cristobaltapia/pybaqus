@@ -797,3 +797,17 @@ class Model:
         elems_ar = np.array(elem_ids, dtype=np.int)
 
         return np.unique(elems_ar)
+
+    def __repr__(self):
+        n_out = list(self.nodal_output[1][1].keys())
+        e_out = list(self.elem_output[1][1].keys())
+        s = f"""Abaqus result object:
+--------------------
+Number of nodes:          {len(self.nodes):,}
+Number of elements:       {len(self.elements):,}
+Number of node sets:      {len(self.node_sets):,}
+Number of element sets:   {len(self.element_sets):,}
+Nodal output variables:   {n_out}
+Element output variables: {e_out}
+"""
+        return s
