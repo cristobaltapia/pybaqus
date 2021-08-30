@@ -54,12 +54,10 @@ class Model:
         self._status = n
 
     def add_node(self, node):
-        if node._num not in self.nodes:
-            self.nodes[node._num] = node
+        self.nodes[node._num] = node
 
     def add_element(self, element):
-        if element.num not in self.elements:
-            self.elements[element.num] = element
+        self.elements[element.num] = element
 
     def add_set(self, name, elements, s_type):
         """Add an element set.
@@ -368,7 +366,7 @@ class Model:
 
         return coords_ar
 
-    def get_element_result(self, var, step, inc, elem_set=None):
+    def get_element_result(self, var, step, inc, elem_set=None, elem_id=None):
         """Get element results.
 
         Parameters
