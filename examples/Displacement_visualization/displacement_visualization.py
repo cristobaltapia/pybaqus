@@ -9,6 +9,6 @@ mesh.point_arrays["U1"] = U1
 
 
 plot = pv.Plotter()
-plot.add_mesh(mesh, show_edges=True, color="white",scalars="U1", show_scalar_bar=True)
+plot.add_mesh(mesh, show_edges=True, scalars="U1", show_scalar_bar=True)
 plot.view_xy()
 plot.show()
