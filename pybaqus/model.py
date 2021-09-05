@@ -241,7 +241,10 @@ class Model:
         else:
             # FIXME: have this variable sorted globally
             keys = sorted(list(self.nodes.keys()))
-            elem_ids = self.elem_output[step][inc][var].keys()
+            try:
+                elem_ids = self.elem_output[step][inc][var].keys()
+            except KeyError:
+                print(f"Requested output variable {var} not present as element result of the model.")
 
         if var in self.nodal_output[step][inc]:
             results = self.nodal_output[step][inc][var]
