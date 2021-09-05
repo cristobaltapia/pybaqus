@@ -241,8 +241,7 @@ class Model:
         else:
             # FIXME: have this variable sorted globally
             keys = sorted(list(self.nodes.keys()))
-            if var in self.elem_output[step][inc]:
-                elem_ids = self.elem_output[step][inc][var].keys()
+            elem_ids = self.elem_output[step][inc][var].keys()
 
         if var in self.nodal_output[step][inc]:
             results = self.nodal_output[step][inc][var]
