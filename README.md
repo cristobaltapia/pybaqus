@@ -89,8 +89,8 @@ s2 = res.get_nodal_result(var="S2", step=1, inc=1)
 mesh.point_arrays["S2"] = s2
 
 plot = pv.Plotter()
-p.add_mesh(mesh, show_edges=True, color="white",
-           scalars="S2", show_scalar_bar=True
+plot.add_mesh(mesh, show_edges=True, color="white",
+           scalars="S2", show_scalar_bar=True)
 plot.view_xy()
 plot.show()
 ```
