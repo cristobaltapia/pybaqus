@@ -83,7 +83,7 @@ class Surface:
         new_keys = {old: new for new, old in enumerate(u_nodes.keys())}
         new_nodes = np.array([u_nodes[k].coords for k in u_nodes.keys()])
 
-        list_nodes = [self._surf_data(fi, new_keys) for fi in faces]
+        list_nodes = [y for fi in faces for y in self._surf_data(fi, new_keys)]
         offset = [(fi._n_nodes + 1) for fi in faces]
         elem_type = [fi.element_type for fi in faces]
 
@@ -102,7 +102,12 @@ class Surface:
             Dictionary with the used nodes.
 
         """
-        nodes = np.unique(np.array([fi.get_nodes() for fi in self._faces]))
+        node_list = []
+        for fi in self._faces:
+            node_list += fi.get_nodes()
+
+        # nodes = np.unique(np.array([fi.get_nodes() for fi in self._faces]))
+        nodes = np.unique(np.array(node_list))
 
         all_nodes = self._model.nodes
         used_nodes = {k: all_nodes[k] for k in nodes}
