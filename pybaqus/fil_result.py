@@ -4,6 +4,7 @@ Class for the Fil results
 import re
 
 import numpy as np
+from tqdm import tqdm
 
 from .model import Model
 from .nodes import Node2D, Node3D
@@ -54,7 +55,7 @@ class FilParser:
         2001: ("_parse_step", ["end"]),
     }
 
-    def __init__(self, records):
+    def __init__(self, records, progress):
         self._records = records
         self.model = Model()
 
@@ -78,9 +79,9 @@ class FilParser:
         self._tmp_faces: dict = dict()
         self._node_elems: dict = dict()
 
-        self._parse_records()
+        self._parse_records(progress)
 
-    def _parse_records(self):
+    def _parse_records(self, progress):
         """Parse the imported records."""
         records = self._records
 
@@ -91,7 +92,8 @@ class FilParser:
         )
 
         # Parse each record
-        for r_i in records:
+        for r_i in tqdm(records, disable=(not progress), leave=False, unit="record",
+                        dynamic_ncols=True):
             m_rec = re.findall(pattern, r_i)
 
             # Get each variable
@@ -530,7 +532,7 @@ class FilParser:
         r_type : str
 
         """
-        print(f"Record key {record[1]} ({r_type}) not yet implemented!")
+        tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
 
     def _reference_elems_in_nodes(self):
         """Add a list to each node with the elements using the node."""

@@ -2,28 +2,33 @@
 Utilities to read the ASCII *.fil files generates by abaqus.
 """
 import re
+from tqdm import tqdm
 
 from .fil_result import FilParser
 
 
-def open_fil(file_name):
+def open_fil(file_name, progress=False):
     """Read the *.fil file
 
     Parameters
     ----------
     file_name : str
         Path to the *.fil file
+    progress : bool
+        Indicates whether the progress of the reading process should be shown
+        in a progress bar. (default: False)
 
     Returns
     -------
     Result : Object containing the results of the *.fil file
 
     """
-    with open(file_name, "r") as result:
-        lines = result.readlines()
+    if progress:
+        print("Reading records...")
 
-    # Remove new lines to get one continuous string
-    lines = [li.replace("\n", "") for li in lines]
+    with open(file_name, "r") as result:
+        lines = result.read().splitlines()
+
     res_line = "".join(lines)
     del lines
 
@@ -35,7 +40,10 @@ def open_fil(file_name):
     del res_line
 
     # Create result object
-    result = FilParser(records)
+    if progress:
+        print("Parsing records...")
+
+    result = FilParser(records, progress=progress)
     del records
 
     return result.model

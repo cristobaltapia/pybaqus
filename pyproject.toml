@@ -11,6 +11,7 @@ scipy = "^1.4.1"
 matplotlib = "^3.2.1"
 pyvista = "^0.31.0"
 vtk = "^9.0.3"
+tqdm = "^4.62.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
