@@ -85,14 +85,12 @@ class Surface:
         new_nodes = np.array([u_nodes[k].coords for k in sorted_nodes])
 
         list_nodes = [y for fi in faces for y in self._surf_data(fi, new_keys)]
-        offset = [(fi._n_nodes + 1) for fi in faces]
         elem_type = [fi.element_type for fi in faces]
 
         ar_cells = np.array(list_nodes)
-        ar_offset = np.cumsum(np.array(offset, dtype=int)) - offset[0]
         ar_elem_type = np.array(elem_type, np.int8)
 
-        return ar_cells, ar_offset, ar_elem_type, new_nodes
+        return ar_cells, ar_elem_type, new_nodes
 
     def get_used_nodes(self):
         """Get the nodes belonging to the surface.
@@ -124,9 +122,9 @@ class Surface:
             VTK mesh unstructured grid
 
         """
-        cells, offset, elem_t, nodes = self.get_cells()
+        cells, elem_t, nodes = self.get_cells()
 
-        mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
+        mesh = UnstructuredGrid(cells, elem_t, nodes)
 
         self._mesh = mesh
 

@@ -593,19 +593,16 @@ class Model:
         keys = sorted(list(elements.keys()))
 
         cells = list()
-        offset = list()
         elem_type = list()
 
         for el_i in keys:
             cells.extend(elements[el_i].get_cell(kmap=kmap))
-            offset.append(len(elements[el_i]._nodes))
             elem_type.append(elements[el_i]._elem_type)
 
         ar_cells = np.array(cells)
-        ar_offset = np.cumsum(np.array(offset, dtype=int)) - offset[0]
         ar_elem_type = np.array(elem_type, np.int8)
 
-        return ar_cells, ar_offset, ar_elem_type
+        return ar_cells, ar_elem_type
 
     def get_mesh(self, elem_set=None):
         """Construct the mesh of the finite element model
@@ -617,9 +614,9 @@ class Model:
 
         """
         nodes = self.get_node_coords(elem_set=elem_set)
-        cells, offset, elem_t = self.get_cells(elem_set)
+        cells, elem_t = self.get_cells(elem_set)
 
-        mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
+        mesh = UnstructuredGrid(cells, elem_t, nodes)
 
         self.mesh = mesh
 
@@ -672,9 +669,9 @@ class Model:
         else:
             status = None
 
-        cells, offset, elem_t = self.get_cells(elem_set=elem_set, status=status)
+        cells, elem_t = self.get_cells(elem_set=elem_set, status=status)
 
-        mesh = UnstructuredGrid(offset, cells, elem_t, nodes)
+        mesh = UnstructuredGrid(cells, elem_t, nodes)
 
         self.mesh = mesh
 
