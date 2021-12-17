@@ -127,7 +127,7 @@ class FilParser:
         # take the one with the data (the only one which is not am empty
         # string)
         if record[0] != "":
-            return  int(record[0])
+            return int(record[0])
         elif record[1] != "":
             return float(record[1].replace("D", "E"))
         else:
@@ -303,13 +303,11 @@ class FilParser:
 
         if len(record) > 2:
             for ix, r_i in enumerate(record[3:], start=1):
-                self.model.add_nodal_output(
-                    node=record[2], var=f"{var}{ix}", data=r_i, step=step, inc=inc
-                )
+                self.model.add_nodal_output(node=record[2], var=f"{var}{ix}", data=r_i,
+                                            step=step, inc=inc)
         else:
-            self.model.add_nodal_output(
-                node=record[0], var=var, data=record[1], step=step, inc=inc
-            )
+            self.model.add_nodal_output(node=record[0], var=var, data=record[1], step=step,
+                                        inc=inc)
 
         return 1
 
@@ -431,9 +429,8 @@ class FilParser:
 
         # (k + 1): because the dof's start at 1
         # (val -1): because they will be reference to a list, which is 0-indexed
-        self._dof_map = {
-            (k + 1): (val - 1) if val != 0 else 0 for k, val in enumerate(active_dof)
-        }
+        self._dof_map = {(k + 1): (val - 1) if val != 0 else 0
+                         for k, val in enumerate(active_dof)}
 
         # Process all nodes
         self._parse_all_nodes()
@@ -591,4 +588,3 @@ class FilParser:
 
         for ni, elems in self._node_elems.items():
             model.nodes[ni].in_elements = elems
-
