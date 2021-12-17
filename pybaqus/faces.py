@@ -80,8 +80,9 @@ class Surface:
         u_nodes = self.get_used_nodes()
 
         # Remap node keys
-        new_keys = {old: new for new, old in enumerate(u_nodes.keys())}
-        new_nodes = np.array([u_nodes[k].coords for k in u_nodes.keys()])
+        sorted_nodes = sorted(u_nodes.keys())
+        new_keys = {old: new for new, old in enumerate(sorted_nodes)}
+        new_nodes = np.array([u_nodes[k].coords for k in sorted_nodes])
 
         list_nodes = [y for fi in faces for y in self._surf_data(fi, new_keys)]
         offset = [(fi._n_nodes + 1) for fi in faces]
