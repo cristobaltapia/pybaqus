@@ -40,6 +40,9 @@ class FilParser:
         146: ("_parse_nodal_output", ["TF"]),
         1501: ("_parse_surface", [False]),
         1502: ("_parse_surface", [True]),
+        1503: ("_parse_contact_output_request", []),
+        1504: ("_parse_curr_contact_node", []),
+        1511: ("_parse_surface_output", ["CSTRESS"]),
         1900: ("_parse_element", []),
         1901: ("_parse_node", []),
         1902: ("_parse_active_dof", []),
@@ -55,6 +58,10 @@ class FilParser:
         2001: ("_parse_step", ["end"]),
     }
 
+    CONTACT_OUT = {
+        "CSTRESS": ["CPRESS", "CSHEAR1", "CSHEAR2"],
+    }
+
     def __init__(self, records, progress):
         self._records = records
         self.model = Model()
@@ -65,6 +72,7 @@ class FilParser:
         self._curr_inc: int = None
         self._curr_loc_id: int = None
         self._flag_output: int = None
+        self._curr_output_node: int = None
         self._output_request_set: str = None
         self._output_elem_type: str = None
         self._dof_map: dict = dict()
@@ -305,16 +313,59 @@ class FilParser:
 
         return 1
 
+    def _parse_surface_output(self, record, var):
+        """Parse results from surfaces.
+
+        Parameters
+        ----------
+        record : TODO
+        var : str
+            Name of the variable to be processed, e.g.: "CSTRESS"
+
+        Returns
+        -------
+        TODO
+
+        """
+        step = self._curr_step
+        inc = self._curr_inc
+        node = self._curr_output_node
+
+        for ix, comp_i in enumerate(record[2:]):
+            self.model.add_nodal_output(node=node, var=self.CONTACT_OUT[var][ix],
+                                        data=comp_i, step=step, inc=inc)
+
+    def _parse_contact_output_request(self, record):
+        """Parse surfaces and nodes associated to contact pair.
+
+        Parameters
+        ----------
+        record : TODO
+
+        """
+        id_slave = int(record[3].strip())
+        id_master = int(record[4].strip())
+        name_slave = self._label_cross_ref[id_slave]
+        name_master = self._label_cross_ref[id_master]
+        self.model.add_contact_pair(master=name_master, slave=name_slave)
+
+    def _parse_curr_contact_node(self, record):
+        """Parse the current node associated to the surface output.
+
+        Parameters
+        ----------
+        record : TODO
+
+        """
+        self._curr_output_node = record[2]
+        self._no_of_components = record[3]
+
     def _parse_output_request(self, record):
         """Parse the output request
 
         Parameters
         ----------
         record : TODO
-
-        Returns
-        -------
-        TODO
 
         """
         self._flag_output = record[2]

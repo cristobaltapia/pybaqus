@@ -29,6 +29,7 @@ class Model:
         self.node_sets: dict = dict()
         self.surfaces: dict = dict()
         self.results: dict = dict()
+        self.contact_pairs: list = list()
         self.metadata: dict = dict()
         self.mesh = None
         self.elem_output: dict = dict()
@@ -99,6 +100,19 @@ class Model:
         """
         if name not in self.surfaces:
             self.surfaces[name] = RigidSurface(name, dimension, self, ref_point)
+
+    def add_contact_pair(self, master, slave):
+        """Add a contact pair to the model.
+
+        Parameters
+        ----------
+        master : str
+            Name of the surface defining the master surface.
+        slave : str
+            Name of the surface defining the slave surface.
+
+        """
+        self.contact_pairs += [{"master": master, "slave": slave}]
 
     def add_face_to_surface(self, surface, face_info):
         """Add a face to an existing surface
