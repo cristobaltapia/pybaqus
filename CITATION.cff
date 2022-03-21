@@ -3,6 +3,6 @@ authors:
 - family-names: "Tapia Camú"
   given-names: "Cristóbal"
   orcid: "https://orcid.org/0000-0003-2228-1686"
-title: "Pybaqus: Python library to read ASCII *.fil Abaqus results and visualize the different output data"
+title: "Pybaqus: A Python library for parsing and visualizing field data of Abaqus ASCII file results"
 version: 0.2.0
 url: "https://github.com/cristobaltapia/pybaqus"
