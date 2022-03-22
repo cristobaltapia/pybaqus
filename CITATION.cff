@@ -4,5 +4,5 @@ authors:
   given-names: "Cristóbal"
   orcid: "https://orcid.org/0000-0003-2228-1686"
 title: "Pybaqus: A Python library for the visualization and post-processing of Abaqus ASCII result files"
-version: 0.2.0
+version: 0.2.1
 url: "https://github.com/cristobaltapia/pybaqus"
