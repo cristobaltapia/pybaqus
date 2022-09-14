@@ -26,7 +26,7 @@ The following feeatures are either already implemented or planned:
 # Installation
 
 ```
-pip install git+https://github.com/cristobaltapia/pybaqus
+pip install pybaqus
 ```
 
 # Quick-start
