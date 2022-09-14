@@ -7,9 +7,9 @@ The results can then be analyzed in pure python (i.e. no Abaqus licence needed) 
 
 Pybaqus is in a very early development stage.
 Therefore, there are still many unimplemented functionalities.
-However, basic operations like importing the mesh and the nodal and element results is implemeneted and can be used for some analysis.
+However, basic operations like importing the mesh and the nodal and element results is implemented and can be used for some analysis.
 
-The following feeatures are either already implemented or planned:
+The following features are either already implemented or planned:
 
 - [x] Import 2D meshes
 - [x] Import 3D meshes
@@ -17,11 +17,9 @@ The following feeatures are either already implemented or planned:
 - [x] Import element results
 - [x] Element and node sets
 - [x] Extrapolate element results from Gaussian points to nodes _(implemented for some elements)_
-- [ ] Interpolate element/nodal results to any point within the element considering the shape functions of the element
 - [ ] Import history output
 - [x] Compute stresses along paths
 - [ ] Compute section forces and moments
-- [ ] Implement functions to easily create animations
 
 # Installation
 
