@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "pybaqus"
-version = "0.2.2"
+version = "0.2.3"
 description = ""
 authors = ["Cristóbal Tapia Camú <crtapia@gmail.com>"]
+readme = "README.md"
 repository = "https://github.com/cristobaltapia/pybaqus"
 
 [tool.poetry.dependencies]
