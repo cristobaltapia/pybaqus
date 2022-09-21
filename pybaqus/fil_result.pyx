@@ -2,6 +2,7 @@
 Class for the Fil results
 """
 import re
+import cython
 
 import numpy as np
 from tqdm import tqdm
@@ -10,7 +11,14 @@ from .model import Model
 from .nodes import Node2D, Node3D
 from .elements import ELEMENTS, N_INT_PNTS
 
+if cython.compiled:
+  print("Cython compiled")
+else:
+  print("Cython not compiled!")
 
+
+@cython.final
+@cython.cclass
 class FilParser:
     """
     Parse and store the data from a *.fil file.
@@ -62,36 +70,67 @@ class FilParser:
         "CSTRESS": ["CPRESS", "CSHEAR1", "CSHEAR2"],
     }
 
-    def __init__(self, records, progress):
+    _records: list
+    _model: Model
+    _curr_elem_out: cython.int
+    _curr_step: cython.int
+    _curr_inc: cython.int
+    _curr_loc_id: cython.int
+    _curr_n_int_point: cython.int
+    _flag_output: cython.int
+    _curr_output_node: cython.int
+    _output_request_set: cython.str
+    _output_elem_type: cython.str
+    _dof_map: dict
+    _model_dimension: cython.int
+    _node_records: list
+    _curr_set: cython.int
+    _tmp_sets: dict
+    _label_cross_ref: dict
+    _curr_surface: cython.int
+    _tmp_surf: dict
+    _tmp_faces: dict
+    _node_elems: dict
+
+    def __cinit__(self, records: list, progress: bool):
         self._records = records
-        self.model = Model()
+        self._model = Model()
 
-        self._curr_elem_out: int = None
-        self._curr_n_int_points: int = None
-        self._curr_step: int = None
-        self._curr_inc: int = None
-        self._curr_loc_id: int = None
-        self._flag_output: int = None
-        self._curr_output_node: int = None
-        self._output_request_set: str = None
-        self._output_elem_type: str = None
-        self._dof_map: dict = dict()
-        self._model_dimension: int = None
-        self._node_records: list = list()
+        self._curr_elem_out= -1
+        self._curr_n_int_point = -1
+        self._curr_step = -1
+        self._curr_inc = -1
+        self._curr_loc_id = -1
+        self._flag_output = -1
+        self._curr_output_node = -1
+        self._output_request_set = ""
+        self._output_elem_type = ""
+        self._dof_map = dict()
+        self._model_dimension = -1
+        self._node_records = list()
 
-        self._curr_set: int = None
-        self._tmp_sets: dict = {"element": dict(), "node": dict()}
-        self._label_cross_ref: dict = dict()
-        self._curr_surface: int = None
-        self._tmp_surf: dict = dict()
-        self._tmp_faces: dict = dict()
-        self._node_elems: dict = dict()
+        self._curr_set = -1
+        self._tmp_sets = {"element": dict(), "node": dict()}
+        self._label_cross_ref = dict()
+        self._curr_surface = -1
+        self._tmp_surf = dict()
+        self._tmp_faces = dict()
+        self._node_elems = dict()
 
         self._parse_records(progress)
 
-    def _parse_records(self, progress):
+    @cython.nonecheck(False)
+    @cython.boundscheck(False)
+    def _parse_records(self, progress: bool):
         """Parse the imported records."""
+        records: list
+        vars_i: list
+        r_i: cython.str
+        key: cython.int
+        ix: cython.int = 0
+
         records = self._records
+        n_records: cython.int = len(records)
 
         pattern = (
             r"[ADEI](?: \d(\d+)|"  # ints
@@ -100,8 +139,8 @@ class FilParser:
         )
 
         # Parse each record
-        for r_i in tqdm(records, disable=(not progress), leave=False, unit="record",
-                        dynamic_ncols=True):
+        while ix < n_records:
+            r_i = records[ix]
             m_rec = re.findall(pattern, r_i)
 
             # Get each variable
@@ -115,13 +154,14 @@ class FilParser:
                 getattr(self, self.PARSE_MAP[key][0])(vars_i, *args)
             else:
                 print(f"Key {key} not defined!")
+            ix += 1
 
         # Execute post-read actions on the model
         self._post_parse_all_surfaces()
         self._reference_elems_in_nodes()
-        self.model.post_import_actions()
+        self._model.post_import_actions()
 
-    def _convert_record(self, record):
+    def _convert_record(self, record: tuple):
         """Convert one record to a list of numbers and strings."""
         # For each variable three matches are made (why?), so we need to
         # take the one with the data (the only one which is not am empty
@@ -133,7 +173,8 @@ class FilParser:
         else:
             return record[2]
 
-    def _parse_element(self, record):
+    @cython.nonecheck(False)
+    def _parse_element(self, record: list):
         """Parse the data of an element
 
         Parameters
@@ -142,24 +183,29 @@ class FilParser:
 
         """
         # Element type
-        e_type = record[3].strip()
-        e_number = record[2]
-        nodes = record[4:]
+        e_type: cython.str = record[3].strip()
+        e_number: cython.int = record[2]
+        nodes: list = record[4:]
+        n: cython.int
+        ix: cython.int = 0
+        nnodes: cython.int = len(nodes)
 
         # Add a reference to the node poinitng at the element
-        for n in nodes:
+        while ix < nnodes:
+            n = nodes[ix]
             if n in self._node_elems.keys():
                 self._node_elems[n].append(e_number)
             else:
                 self._node_elems[n] = [e_number]
+            ix += 1
 
         ElementClass = ELEMENTS[e_type]
 
-        element = ElementClass(*nodes, num=e_number, model=self.model, code=e_type)
-        element.n_integ_points = N_INT_PNTS[e_type]
-        self.model.add_element(element)
+        element = ElementClass(*nodes, num=e_number, model=self._model, code=e_type)
+        element.n_integ_points: cython.int = N_INT_PNTS[e_type]
+        self._model.add_element(element)
 
-    def _parse_node(self, record):
+    def _parse_node(self, record: list):
         """Parse the data of a node
 
         Parameters
@@ -168,7 +214,7 @@ class FilParser:
 
         """
         # Wait until the 'Active degree of freedom' key has been processed
-        if self._model_dimension is None:
+        if self._model_dimension < 0:
             self._node_records.append(record)
         else:
             n_number = record[2]
@@ -176,11 +222,11 @@ class FilParser:
             dof_map = self._dof_map
 
             if self._model_dimension == 2:
-                node = Node2D(n_number, dof_map, self.model, *dofs)
+                node = Node2D(n_number, dof_map, self._model, *dofs)
             else:
-                node = Node3D(n_number, dof_map, self.model, *dofs)
+                node = Node3D(n_number, dof_map, self._model, *dofs)
 
-            self.model.add_node(node)
+            self._model.add_node(node)
 
     def _parse_all_nodes(self):
         """Parse all nodes.
@@ -198,14 +244,19 @@ class FilParser:
         TODO
 
         """
-        records = self._node_records
+        records: list = self._node_records
+        record: list
+        ix: cython.int = 0
+        n_records: cython.int = len(records)
 
-        for record in records:
+        while ix < n_records:
+            record = records[ix]
             self._parse_node(record)
+            ix += 1
 
         self._node_records = list()
 
-    def _parse_elem_output(self, record, var):
+    def _parse_elem_output(self, record: list, var: str):
         """Parse output data for elements.
 
         Parameters
@@ -221,6 +272,9 @@ class FilParser:
         """
         step = self._curr_step
         inc = self._curr_inc
+        ix: cython.int = 1
+        data: cython.double
+        n_records: cython.int
 
         # This flags the type of output: element (0), nodal (1), modal
         # (2), or element set energy (3)
@@ -232,14 +286,20 @@ class FilParser:
             int_point = self._curr_n_int_point
 
             # Append all the records
-            for ix, data in enumerate(record[2:], start=1):
-                self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc, int_point)
+            n_records = len(record[2:])
+            while ix < n_records:
+                data = record[1 + ix]
+                self._model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc, int_point)
+                ix += 1
 
         elif flag_out == 1:
             n_node = self._curr_elem_out
 
-            for ix, data in enumerate(record[2:], start=1):
-                self.model.add_nodal_output(n_node, f"{var}{ix}", data, step, inc)
+            n_records = len(record[2:])
+            while ix < n_records:
+                data = record[1 + ix]
+                self._model.add_nodal_output(n_node, f"{var}{ix}", data, step, inc)
+                ix += 1
 
         elif flag_out == 2:
             # TODO: implement modal output
@@ -250,7 +310,7 @@ class FilParser:
             # TODO: implement set energy output
             pass
 
-    def _parse_elem_header(self, record):
+    def _parse_elem_header(self, record: list):
         """Parse the element record
 
         Parameters
@@ -262,9 +322,9 @@ class FilParser:
         TODO
 
         """
-        num = record[2]
-        n_int_point = record[3]
-        n_sec_point = record[4]
+        num: cython.int = record[2]
+        n_int_point: cython.int = record[3]
+        n_sec_point: cython.int = record[4]
         # loc_id:
         # - 0 if the subsequent records contain data at an integration point;
         # - 1 if the subsequent records contain values at the centroid of the element;
@@ -272,21 +332,21 @@ class FilParser:
         # - 3 if the subsequent records contain data associated with rebar within an element;
         # - 4 if the subsequent records contain nodal averaged values;
         # - 5 if the subsequent records contain values associated with the whole element
-        loc_id = record[5]
-        name_rebar = record[6]
-        n_direct_stresses = record[7]
-        n_shear_stresses = record[8]
-        n_diretions = record[9]
-        n_sec_force_comp = record[10]
+        loc_id: cython.int = record[5]
+        name_rebar: cython.str = record[6]
+        n_direct_stresses: cython.int = record[7]
+        n_shear_stresses: cython.int = record[8]
+        n_diretions: cython.int = record[9]
+        n_sec_force_comp: cython.int = record[10]
 
         # Append the element/node number to the list of elements/nodes which
         # data is going to be read next
-        self._curr_elem_out = num
-        self._curr_n_int_point = n_int_point
-        self._curr_loc_id = loc_id
-        self._curr_int_point_data = dict()
+        self._curr_elem_out: cython.int = num
+        self._curr_n_int_point: cython.int = n_int_point
+        self._curr_loc_id: cython.int = loc_id
+        # self._curr_int_point_data = dict()
 
-    def _parse_nodal_output(self, record, var):
+    def _parse_nodal_output(self, record: list, var: str):
         """Parse the nodal record
 
         Parameters
@@ -300,18 +360,23 @@ class FilParser:
         """
         step = self._curr_step
         inc = self._curr_inc
+        ix: cython.int = 1
+        r_i: cython.double
+        n_outputs: cython.int = len(record[3:])
 
         if len(record) > 2:
-            for ix, r_i in enumerate(record[3:], start=1):
-                self.model.add_nodal_output(node=record[2], var=f"{var}{ix}", data=r_i,
+            while ix < n_outputs:
+                r_i = record[2 + ix]
+                self._model.add_nodal_output(node=record[2], var=f"{var}{ix}", data=r_i,
                                             step=step, inc=inc)
+                ix += 1
         else:
-            self.model.add_nodal_output(node=record[0], var=var, data=record[1], step=step,
+            self._model.add_nodal_output(node=record[0], var=var, data=record[1], step=step,
                                         inc=inc)
 
         return 1
 
-    def _parse_surface_output(self, record, var):
+    def _parse_surface_output(self, record: list, var: str):
         """Parse results from surfaces.
 
         Parameters
@@ -328,10 +393,15 @@ class FilParser:
         step = self._curr_step
         inc = self._curr_inc
         node = self._curr_output_node
+        ix: cython.int = 0
+        comp_i: cython.double
+        n_comp: cython.int = len(record[2:])
 
-        for ix, comp_i in enumerate(record[2:]):
-            self.model.add_nodal_output(node=node, var=self.CONTACT_OUT[var][ix],
+        while ix < n_comp:
+            comp_i = record[2 + ix]
+            self._model.add_nodal_output(node=node, var=self.CONTACT_OUT[var][ix],
                                         data=comp_i, step=step, inc=inc)
+            ix += 1
 
     def _parse_contact_output_request(self, record):
         """Parse surfaces and nodes associated to contact pair.
@@ -345,7 +415,7 @@ class FilParser:
         id_master = int(record[4].strip())
         name_slave = self._label_cross_ref[id_slave]
         name_master = self._label_cross_ref[id_master]
-        self.model.add_contact_pair(master=name_master, slave=name_slave)
+        self._model.add_contact_pair(master=name_master, slave=name_slave)
 
     def _parse_curr_contact_node(self, record):
         """Parse the current node associated to the surface output.
@@ -383,6 +453,9 @@ class FilParser:
         TODO
 
         """
+        n_step: cython.int
+        n_inc: cython.int
+
         if flag == "start":
             n_step = record[7]
             n_inc = record[8]
@@ -402,13 +475,13 @@ class FilParser:
                 "subheading": "".join(record[13:]),
             }
 
-            self.model.add_step(n_step, data)
+            self._model.add_step(n_step, data)
 
             self._curr_step = n_step
             self._curr_inc = n_inc
         else:
-            self._curr_step = None
-            self._curr_inc = None
+            self._curr_step = -1
+            self._curr_inc = -1
 
     def _parse_active_dof(self, record):
         """Parse the active degrees of freedom.
@@ -425,10 +498,10 @@ class FilParser:
         active_dof = np.array(record[2:], dtype=int)
         dimension = np.sum(np.not_equal(active_dof[:3], np.zeros(3)), dtype=int)
         self._model_dimension = dimension
-        self.model._dimension = dimension
+        self._model._dimension = dimension
 
         # (k + 1): because the dof's start at 1
-        # (val -1): because they will be reference to a list, which is 0-indexed
+        # (val - 1): because they will reference to a list, which is 0-indexed
         self._dof_map = {(k + 1): (val - 1) if val != 0 else 0
                          for k, val in enumerate(active_dof)}
 
@@ -525,7 +598,8 @@ class FilParser:
         """Process all the surfaces after reading all records."""
         surfaces = self._tmp_surf
         faces = self._tmp_faces
-        model = self.model
+        model = self._model
+        ix: cython.int
 
         for ix, surf in surfaces.items():
             if surf["type"] == "rigid":
@@ -543,7 +617,7 @@ class FilParser:
                 name = self._label_cross_ref[ix]
                 dim = surf["dimension"]
                 master = surf["master names"]
-                self.model.add_deformable_surface(name, dim, master)
+                self._model.add_deformable_surface(name, dim, master)
 
                 for face_i in faces[ix]:
                     model.add_face_to_surface(name, face_i)
@@ -566,10 +640,10 @@ class FilParser:
 
         if ref in tmp_sets["element"]:
             elements = tmp_sets["element"][ref]
-            self.model.add_set(label, elements, "element")
+            self._model.add_set(label, elements, "element")
         elif ref in tmp_sets["node"]:
             elements = tmp_sets["node"][ref]
-            self.model.add_set(label, elements, "node")
+            self._model.add_set(label, elements, "node")
 
     def _parse_not_implemented(self, record, r_type):
         """Helper function to deal with the not yet implemented parsers.
@@ -580,11 +654,20 @@ class FilParser:
         r_type : str
 
         """
-        tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
+        # tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
+        print(f"Record key {record[1]} ({r_type}) not yet implemented!")
 
     def _reference_elems_in_nodes(self):
         """Add a list to each node with the elements using the node."""
-        model = self.model
+        model = self._model
+        ni: cython.int
+        nodes: list = list(self._node_elems.keys())
 
-        for ni, elems in self._node_elems.items():
+        for ni in nodes:
+            elems = self._node_elems[ni]
             model.nodes[ni].in_elements = elems
+
+    # grant access to myCppMember thanks to myMember
+    @property
+    def model(self):
+        return self._model
