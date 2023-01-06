@@ -463,6 +463,15 @@ class LineElement(Element):
         }
 
 
+class DistributedCouplingElement(Element):
+    """N node distributed coupling element."""
+    def __init__(self, *nodes, num, model, code):
+        super().__init__(num, model, code)
+        self._n_nodes = len(nodes)
+        self._nodes = nodes
+        self._elem_type = vtk.VTK_POLY_VERTEX
+
+
 class QuadraticHexahedron(Element):
     """20 node quadratic brick element."""
     def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15,
@@ -495,6 +504,9 @@ class QuadraticHexahedron(Element):
 
 
 ELEMENTS = {
+    # Distributed coupling
+    "IDCOUP3U": DistributedCouplingElement,
+    "IDCOUP3R": DistributedCouplingElement,
     # Rigid
     "R2D2": LineElement,
     "R3D3": Triangle,
@@ -525,6 +537,9 @@ ELEMENTS = {
 }
 
 N_INT_PNTS = {
+    # Distributed coupling
+    "IDCOUP3U": 0,
+    "IDCOUP3R": 0,
     # Rigid
     "R2D2": 0,
     "R3D3": 0,
