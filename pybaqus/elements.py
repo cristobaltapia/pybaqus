@@ -79,14 +79,14 @@ class Element:
 
         """
         # Get nodes
-        nodes = np.array(self._nodes)
+        nodes = np.asarray(self._nodes)
 
         if kmap:
             nodes = self.map_node(kmap, nodes)
 
         nodes -= 1
 
-        cell = np.array([self._n_nodes, *nodes], dtype=int)
+        cell = np.asarray([self._n_nodes, *nodes], dtype=int)
 
         return cell
 
@@ -206,7 +206,7 @@ class Quad(Element):
 
         """
         if self._n_integ_points == 4:
-            ext_mat = np.array([
+            ext_mat = np.asarray([
                 [1.8660254, -0.5, 0.1339746, -0.5],
                 [-0.5, 1.8660254, -0.5, 0.1339746],
                 [0.1339746, -0.5, 1.8660254, -0.5],
@@ -347,7 +347,7 @@ class Wedge(Element):
 
         """
         if self._n_integ_points == 2:
-            ext_mat = np.array([
+            ext_mat = np.asarray([
                 [1.3660254037844386, -0.3660254037844386],
                 [1.3660254037844386, -0.3660254037844386],
                 [1.3660254037844386, -0.3660254037844386],
@@ -397,7 +397,7 @@ class Hexahedron(Element):
 
         """
         if self._n_integ_points == 8:
-            ext_mat = np.array([
+            ext_mat = np.asarray([
                 [
                     2.549038105676658, -0.6830127018922192, 0.18301270189221927,
                     -0.6830127018922192, -0.6830127018922192, 0.18301270189221927,

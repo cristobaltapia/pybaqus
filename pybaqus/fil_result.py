@@ -422,7 +422,7 @@ class FilParser:
         TODO
 
         """
-        active_dof = np.array(record[2:], dtype=int)
+        active_dof = np.asarray(record[2:], dtype=int)
         dimension = np.sum(np.not_equal(active_dof[:3], np.zeros(3)), dtype=int)
         self._model_dimension = dimension
         self.model._dimension = dimension

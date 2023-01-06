@@ -270,7 +270,7 @@ class Model:
 
         list_res = [results[k] for k in keys]
 
-        return np.array(list_res)
+        return np.asarray(list_res)
 
     def _nodal_result_from_elements(self, var, step, inc, elem_ids):
         """Get nodal results from element results by extrapolating.
@@ -328,7 +328,7 @@ class Model:
 
         Returns
         -------
-        np.array :
+        np.asarray :
             Results for the given variable `var`
 
         """
@@ -341,7 +341,7 @@ class Model:
             for inc, val in self.nodal_output[step].items():
                 result += [val[var][node_id]]
 
-        return np.array(result)
+        return np.asarray(result)
 
     def get_nodal_vector_result(self, var, step, inc, node_set=None, elem_set=None):
         """Get the vector of a variable at each node.
@@ -379,7 +379,7 @@ class Model:
         for k in keys:
             coords.append(self._get_node_vector_result(k, var, step, inc))
 
-        coords_ar = np.array(coords)
+        coords_ar = np.asarray(coords)
 
         return coords_ar
 
@@ -437,7 +437,7 @@ class Model:
 
         list_res = [np.mean(results[k]) if k in keys_out else np.nan for k in keys]
 
-        ar_results = np.array(list_res)
+        ar_results = np.asarray(list_res)
 
         return ar_results
 
@@ -513,7 +513,7 @@ class Model:
         for k in keys:
             coords[k - 1, :] = nodes[kmap[k]].coords
 
-        coords_ar = np.array(coords)
+        coords_ar = np.asarray(coords)
 
         if return_map:
             return coords_ar, kmap
@@ -599,8 +599,8 @@ class Model:
             cells.extend(elements[el_i].get_cell(kmap=kmap))
             elem_type.append(elements[el_i]._elem_type)
 
-        ar_cells = np.array(cells)
-        ar_elem_type = np.array(elem_type, np.int8)
+        ar_cells = np.asarray(cells)
+        ar_elem_type = np.asarray(elem_type, np.int8)
 
         return ar_cells, ar_elem_type
 
@@ -698,13 +698,13 @@ class Model:
         nodal_output = self.nodal_output[step][inc]
 
         if self._dimension == 3:
-            u = np.array([
+            u = np.asarray([
                 nodal_output[f"{var}1"][n],
                 nodal_output[f"{var}2"][n],
                 nodal_output[f"{var}3"][n],
             ])
         else:
-            u = np.array([
+            u = np.asarray([
                 nodal_output[f"{var}1"][n],
                 nodal_output[f"{var}2"][n],
                 0,
@@ -761,7 +761,7 @@ class Model:
             nodes += elements[el]._nodes
 
         # Remove duplicates
-        nodes_ar = np.array(nodes, dtype=np.int)
+        nodes_ar = np.asarray(nodes, dtype=np.int)
 
         return np.unique(nodes_ar)
 
@@ -806,7 +806,7 @@ class Model:
             elem_ids += nodes[ni].in_elements
 
         # Remove duplicates
-        elems_ar = np.array(elem_ids, dtype=np.int)
+        elems_ar = np.asarray(elem_ids, dtype=np.int)
 
         return np.unique(elems_ar)
 

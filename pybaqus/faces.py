@@ -82,13 +82,13 @@ class Surface:
         # Remap node keys
         sorted_nodes = sorted(u_nodes.keys())
         new_keys = {old: new for new, old in enumerate(sorted_nodes)}
-        new_nodes = np.array([u_nodes[k].coords for k in sorted_nodes])
+        new_nodes = np.asarray([u_nodes[k].coords for k in sorted_nodes])
 
         list_nodes = [y for fi in faces for y in self._surf_data(fi, new_keys)]
         elem_type = [fi.element_type for fi in faces]
 
-        ar_cells = np.array(list_nodes)
-        ar_elem_type = np.array(elem_type, np.int8)
+        ar_cells = np.asarray(list_nodes)
+        ar_elem_type = np.asarray(elem_type, np.int8)
 
         return ar_cells, ar_elem_type, new_nodes
 
@@ -105,8 +105,8 @@ class Surface:
         for fi in self._faces:
             node_list += fi.get_nodes()
 
-        # nodes = np.unique(np.array([fi.get_nodes() for fi in self._faces]))
-        nodes = np.unique(np.array(node_list))
+        # nodes = np.unique(np.asarray([fi.get_nodes() for fi in self._faces]))
+        nodes = np.unique(np.asarray(node_list))
 
         all_nodes = self._model.nodes
         used_nodes = {k: all_nodes[k] for k in nodes}
