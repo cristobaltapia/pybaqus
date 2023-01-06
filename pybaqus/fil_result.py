@@ -33,6 +33,7 @@ class FilParser:
         11: ("_parse_elem_output", ["S"]),
         21: ("_parse_elem_output", ["E"]),
         5: ("_parse_elem_output", ["SDV"]),
+        85: ("_parse_local_csys", []),
         101: ("_parse_nodal_output", ["U"]),
         104: ("_parse_nodal_output", ["RF"]),
         106: ("_parse_nodal_output", ["CF"]),
@@ -520,6 +521,40 @@ class FilParser:
                     "type": "rigid",
                     "reference point": ref_label,
                 }
+
+    def _parse_local_csys(self, record):
+        """Parse the local coordinate systems if available.
+
+        Parameters
+        ----------
+        record : list
+            Records parsed from the *.fil file
+
+        """
+        # Get element being currently processed
+        curr_elem = self._curr_elem_out
+
+        # The local coordinate system is saved for each increment, so we need
+        # to get the current step and increments.
+        curr_step = self.model._curr_out_step
+        curr_inc = self.model._curr_incr
+
+        if self._model_dimension == 3:
+            dir_1 = np.asarray(record[2:5], dtype=float)
+            dir_2 = np.asarray(record[5:], dtype=float)
+            # Only the first two directions are given, but we can compute the
+            # third direction with a cross-prouct.
+            dir_3 = np.cross(dir_1, dir_2)
+            # Stack all directions into one array
+            csys = np.vstack((dir_1, dir_2, dir_3))
+            self.model.add_local_csys(curr_elem, csys, step=curr_step, inc=curr_inc)
+
+        elif self._model_dimension == 2:
+            dir_1 = np.asarray(record[2:4], dtype=float)
+            dir_2 = np.asarray(record[4:], dtype=float)
+            # Stack all directions into one array
+            csys = np.vstack((dir_1, dir_2))
+            self.model.add_local_csys(curr_elem, csys, step=curr_step, inc=curr_inc)
 
     def _post_parse_all_surfaces(self):
         """Process all the surfaces after reading all records."""

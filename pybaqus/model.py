@@ -34,6 +34,7 @@ class Model:
         self.mesh = None
         self.elem_output: dict = dict()
         self.nodal_output: dict = dict()
+        self.local_csys: dict = dict()
         self.steps: dict = dict()
         self._curr_out_step: int = None
         self._curr_incr: int = None
@@ -205,6 +206,7 @@ class Model:
             # Initialize output repository for the current increment in step
             self.nodal_output[n] = {inc_n: dict()}
             self.elem_output[n] = {inc_n: dict()}
+            self.local_csys[n] = {inc_n: dict()}
 
         # Add increment to step
         else:
@@ -216,11 +218,27 @@ class Model:
             # Initialize output repository for the current increment in step
             self.nodal_output[n][inc_n] = dict()
             self.elem_output[n][inc_n] = dict()
+            self.local_csys[n][inc_n] = dict()
 
             self._curr_out_step = data["step number"]
             self._curr_incr = data["increment number"]
 
             self.steps[n].add_increment(inc_n, time_inc, step_time, load_prop)
+
+    def add_local_csys(self, elem, csys, step, inc):
+        """Add a local coordinate system asociated to the output of an element.
+
+        Parameters
+        ----------
+        elem : int
+            Identification number of the element to which the local coordinate
+            system belongs.
+        csys : arraylike
+            Coordinate system as a 3x3 or 2x2 array, depending on the dimensionality of
+            the model.
+
+        """
+        self.local_csys[step][inc][elem] = csys
 
     def get_nodal_result(self, var, step, inc, node_set=None, elem_set=None, node_ids=None):
         """Get nodal results
