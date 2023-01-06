@@ -156,7 +156,8 @@ class Model:
 
         if elem not in self.elem_output[step][inc][var]:
             etype = self.elements[elem].elem_code
-            self.elem_output[step][inc][var][elem] = np.empty((N_INT_PNTS[etype], 1), dtype=float)
+            self.elem_output[step][inc][var][elem] = np.empty((N_INT_PNTS[etype], 1),
+                                                              dtype=float)
 
         self.elem_output[step][inc][var][elem][intpnt - 1] = data
 
@@ -334,6 +335,86 @@ class Model:
         # FIXME: output correct size
         return result
 
+    def get_local_csys(self, direction, step, inc, elem_set=None):
+        """Get the local coordinate system of each element (if present).
+
+        Parameters
+        ----------
+        direction : str
+            Direction of the local coordinate system.
+        step : int
+            Step number.
+        inc : int
+            Increment number within the step.
+        elem_set : str, list, optional
+            Element set.
+
+        Returns
+        -------
+        arraylike :
+            Array (3xn) or (2xn) depending on the dimensionality of the model.
+
+        """
+        if direction == "x":
+            dim = 0
+        elif direction == "y":
+            dim = 1
+        else:
+            dim = 2
+
+        # FIXME: have this variable sorted globally
+        keys = sorted(list(self.elements.keys()))
+
+        # Elements for which the output variable exists
+        keys_out = set(self.local_csys[step][inc].keys())
+
+        # Consider "deleted" elements (i.e. elements that have a 100% of damage according
+        # to the used fracture model)
+        if self._status is not None:
+            status = self.elem_output[step][inc][f"SDV{self._status}"]
+            del_elem = [k for k, v in status.items() if v[0] == 0]
+            keys_out = [k for k in keys_out if k not in del_elem]
+            keys = [k for k in keys if k not in del_elem]
+
+        if elem_set is not None:
+            keys_out, keys = self._map_elem_set_ids_to_output(elem_set, keys, keys_out)
+
+        csys = self.local_csys[step][inc]
+
+        nan_vec = np.ones(self._dimension) * np.nan
+
+        list_res = [csys[k][dim, :] if k in keys_out else nan_vec for k in keys]
+
+        return np.vstack(list_res)
+
+    def _map_elem_set_ids_to_output(self, elem_set, id_elem, id_elem_out):
+        """Get the keys of the elements in the element set mapped to the output array.
+
+        Parameters
+        ----------
+        elem_set : TODO
+        id_elem : TODO
+        id_elem_out : TODO
+
+        Returns
+        -------
+        keys_out : list
+        keys : list
+
+        """
+        set_elements = self.get_elems_from_set(elem_set)
+
+        def filter_elements(elem):
+            if elem in set_elements:
+                return True
+            else:
+                return False
+
+        keys_out = filter(filter_elements, id_elem)
+        keys = filter(filter_elements, id_elem_out)
+
+        return keys_out, keys
+
     def get_time_history_result_from_node(self, var, node_id, steps="all"):
         """Get results for a node duiring the whole simulation.
 
@@ -436,16 +517,7 @@ class Model:
             keys = [k for k in keys if k not in del_elem]
 
         if elem_set is not None:
-            set_elements = self.get_elems_from_set(elem_set)
-
-            def filter_elements(elem):
-                if elem in set_elements:
-                    return True
-                else:
-                    return False
-
-            keys_out = filter(filter_elements, keys_out)
-            keys = filter(filter_elements, keys)
+            keys_out, keys = self._map_elem_set_ids_to_output(elem_set, keys, keys_out)
 
         elif elem_id is not None:
             set_elements = set(elem_id)
