@@ -388,13 +388,21 @@ class Model:
 
         Parameters
         ----------
-        var : TODO
-        step : TODO
-        inc : TODO
+        var : str
+            Variable that should be retrieved.
+        step : int
+            Number of the step.
+        inc : int
+            Increment number within the step.
+        elem_set : str, list
+            Element set from which the results should be retrieved.
+        elem_id : int
+            Number of a single element from which the results should be retrieved.
 
         Returns
         -------
-        TODO
+        array :
+            Results
 
         """
         # FIXME: have this variable sorted globally
@@ -476,16 +484,28 @@ class Model:
     def get_node_coords(self, node_set=None, elem_set=None, node_id=None, return_map=False):
         """Get a list with the node coordinates.
 
-        Return
-        ------
+
+        Parameters
+        ----------
+        node_set : str
+            node_set
+        elem_set : str, list
+            elem_set
+        node_id : int
+            node_id
+        return_map : bool
+            return_map
+
+        Returns
+        -------
         coords : array
             An array of size (n, 3), where n is the number of nodes
         kmap : dict
             If either `node_set`, `elem_set` or `node_id` are given and `return_map` is
-            True, then a dictionary is returned mapping the new node ids to the original
-            node ids.
-        """
+            `True`, then a dictionary is returned mapping the new node ids to the
+            original node ids.
 
+        """
         nodes = self.nodes
 
         if node_set is not None:
@@ -607,6 +627,12 @@ class Model:
     def get_mesh(self, elem_set=None):
         """Construct the mesh of the finite element model
 
+        Parameters
+        ----------
+        elem_set : str
+            Set of elements used to generate the mesh. If none is given, all elements
+            are used.
+
         Returns
         -------
         mesh : mesh
@@ -627,12 +653,23 @@ class Model:
 
         Parameters
         ----------
-        name : TODO
+        name : str
+            Name of the surface
+        return_nodes : bool (optional)
+            Whether nodes should be returned separately as a list.
+        step : int
+            Step from which the deformation should be taken.
+        inc : int
+            Increment from which the deformation should be taken.
+        scale : float
+            Scaling factor of the deformation.
 
         Returns
         -------
-        mesh :
+        mesh : :obj:`UnstructuredGrid`
             Mesh representation of the surface.
+        nodes : list
+            Nodes corresponding to the mesh.
 
         """
         surface = self.surfaces[name]
@@ -651,7 +688,7 @@ class Model:
             Index of the needed step
         inc : int
             Index of the increment within the step
-        scale : flotat
+        scale : float
             Scale to be applied to the deformations
         status : int, None
             Solution-dependent state variable that controls the element deletion
@@ -717,7 +754,7 @@ class Model:
         pass
 
     def get_elems_from_set(self, elem_set):
-        """Get the element IDs belonging to an elemnt set.
+        """Get the element IDs belonging to an element set.
 
         Parameters
         ----------
