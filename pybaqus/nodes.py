@@ -82,9 +82,9 @@ class Node2D(Node):
     def __init__(self, num, dof_map, model, *dof):
         super().__init__(num, model)
 
-        self._x = np.float(dof[dof_map[1]])
-        self._y = np.float(dof[dof_map[2]])
-        self._rz = np.float(dof[dof_map[6]])
+        self._x = float(dof[dof_map[1]])
+        self._y = float(dof[dof_map[2]])
+        self._rz = float(dof[dof_map[6]])
         self._num = num
 
     def _get_coords(self):
@@ -110,12 +110,12 @@ class Node3D(Node):
     def __init__(self, num, dof_map, model, *dof):
         super().__init__(num, model)
 
-        self._x = np.float(dof[dof_map[1]])
-        self._y = np.float(dof[dof_map[2]])
-        self._z = np.float(dof[dof_map[3]])
-        self._rx = np.float(dof[dof_map[4]])
-        self._ry = np.float(dof[dof_map[5]])
-        self._rz = np.float(dof[dof_map[6]])
+        self._x = float(dof[dof_map[1]])
+        self._y = float(dof[dof_map[2]])
+        self._z = float(dof[dof_map[3]])
+        self._rx = float(dof[dof_map[4]])
+        self._ry = float(dof[dof_map[5]])
+        self._rz = float(dof[dof_map[6]])
         self._num = num
 
     def _get_coords(self):

@@ -155,7 +155,7 @@ class Model:
 
         if elem not in self.elem_output[step][inc][var]:
             etype = self.elements[elem].elem_code
-            self.elem_output[step][inc][var][elem] = np.empty((N_INT_PNTS[etype], 1), dtype=np.float64)
+            self.elem_output[step][inc][var][elem] = np.empty((N_INT_PNTS[etype], 1), dtype=float)
 
         self.elem_output[step][inc][var][elem][intpnt - 1] = data
 
