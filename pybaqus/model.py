@@ -798,7 +798,7 @@ class Model:
             nodes += elements[el]._nodes
 
         # Remove duplicates
-        nodes_ar = np.asarray(nodes, dtype=np.int)
+        nodes_ar = np.asarray(nodes, dtype=int)
 
         return np.unique(nodes_ar)
 
@@ -843,7 +843,7 @@ class Model:
             elem_ids += nodes[ni].in_elements
 
         # Remove duplicates
-        elems_ar = np.asarray(elem_ids, dtype=np.int)
+        elems_ar = np.asarray(elem_ids, dtype=int)
 
         return np.unique(elems_ar)
 
