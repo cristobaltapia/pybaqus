@@ -521,6 +521,7 @@ ELEMENTS = {
     "C3D8RH": Hexahedron,
     "C3D8RS": Hexahedron,
     "C3D20R": QuadraticHexahedron,
+    "CSS8": Hexahedron,
 }
 
 N_INT_PNTS = {
@@ -547,4 +548,5 @@ N_INT_PNTS = {
     "C3D8R": 1,
     "C3D8RS": 1,
     "C3D20R": 8,
+    "CSS8": 8,
 }
