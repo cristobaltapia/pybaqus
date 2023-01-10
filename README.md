@@ -20,6 +20,7 @@ The following features are either already implemented or planned:
 - [ ] Import history output
 - [x] Compute stresses along paths
 - [ ] Compute section forces and moments
+- [ ] Documentation
 
 # Installation
 
@@ -29,7 +30,7 @@ pip install pybaqus
 
 # Quick-start
 
-The first thing you need is to tell Abaqus that you want am ASCII `*.fil` result file.
+The first thing you need is to tell Abaqus that you want an ASCII `*.fil` result file.
 To get that you need to write the following lines in your `*.inp` file, within the step definition (before the `*End Step` command) e.g.:
 
 ```
@@ -46,7 +47,7 @@ COORD, U
 
 You can specify different output variables (as long as they are available for the elements you are using, of course).
 After submitting your model you will get a `*.fil` file.
-This is the file you need to import it with Pybaqus.
+This is the file you need, as it can be imported with Pybaqus.
 
 Import the `*.fil` file like this:
 
