@@ -94,7 +94,7 @@ class FilParser:
         """Parse the imported records."""
         records = self._records
 
-        pattern = (
+        pattern = re.compile(
             r"[ADEI](?: \d(\d+)|"  # ints
             + r"((?: |-)\d+\.\d+(?:E|D)(?:\+|-)\d+)|"  # floats
             + r"(.{8}))"  # strings
@@ -103,7 +103,7 @@ class FilParser:
         # Parse each record
         for r_i in tqdm(records, disable=(not progress), leave=False, unit="record",
                         dynamic_ncols=True):
-            m_rec = re.findall(pattern, r_i)
+            m_rec = pattern.findall(r_i)
 
             # Get each variable
             vars_i = list(map(self._convert_record, m_rec))
