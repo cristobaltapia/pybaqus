@@ -490,6 +490,9 @@ class LineElement(Element):
             8: vtk.VTK_LINE,
         }
 
+    def _extrapol_matrix(self):
+        """Extrapolation matrix."""
+        return np.ones((2, 1))
 
 class DistributedCouplingElement(Element):
     """N node distributed coupling element."""
