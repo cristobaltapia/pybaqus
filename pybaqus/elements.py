@@ -1,5 +1,33 @@
 """
 Definitions for the different element types.
+
+The different Abaqus elements are represented by the corresponding VTK cell
+types defined in [1]. Since typically different Abaqus element types are
+represented by the same geometry, a class for each geometry (or better said,
+VTK cell type) is created, e.g. Quad or Triangle. All these classes inherit
+from the `Element` class, where generic functions are defined.
+
+Each Abaqus element is associated to one of these classes. The number of
+integration points is an attribute of each object, which is set for each
+element during the importing process of the Abaqus model. The correspondance
+of each Abaqus element with the correct Element class is done via the
+dictionary `ELEMENTS`, which contains the Abaqus reference code of the element
+as key (e.g. `CPS4`) and the corresponding Element class as value. Similarly,
+the number of integration points for each Abaqus element is defined in the
+dictionary `N_INT_PNTS`.
+
+# Adding new elements
+
+To add support for a new element, the Abaqus element code has to be added to
+both dictionaries `ELEMENTS` and `N_INT_PNTS` with the corresponding
+information. Additionally, it should be ensured that the corresponding class
+has implemented the function `_extrapol_matrix` for the number of integration
+points of the element (see e.g. the class `Quad`).
+
+# References
+
+[1] https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
+
 """
 import numpy as np
 import vtk
