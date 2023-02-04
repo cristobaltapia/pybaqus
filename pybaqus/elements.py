@@ -494,6 +494,7 @@ class LineElement(Element):
         """Extrapolation matrix."""
         return np.ones((2, 1))
 
+
 class DistributedCouplingElement(Element):
     """N node distributed coupling element."""
     def __init__(self, *nodes, num, model, code):
