@@ -24,6 +24,19 @@ information. Additionally, it should be ensured that the corresponding class
 has implemented the function `_extrapol_matrix` for the number of integration
 points of the element (see e.g. the class `Quad`).
 
+# Interpolation schemes used in Abaqus
+
+The interpolation schemes used for each element are defined in the Abaqus guide,
+under the following sections:
+
+* Theory
+    * Elements
+        * Continuum elements
+            * Solid isoparametric quadrilaterals and hexahedra
+            * Triangular, tetrahedral, and wedge elements
+        * Membrane and truss elements
+            * Truss elements
+
 # References
 
 [1] https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
@@ -504,6 +517,62 @@ class DistributedCouplingElement(Element):
         self._elem_type = vtk.VTK_POLY_VERTEX
 
 
+class QuadraticQuad(Element):
+    """4-node rectangular element."""
+    def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, num, model, code):
+        super().__init__(num, model, code)
+        self._n_nodes = 4
+        self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8]
+        self._elem_type = vtk.VTK_QUADRATIC_QUAD
+
+        # Define faces connectivity
+        self._faces = {
+            1: [0, 1, 4],
+            2: [1, 2, 5],
+            3: [2, 3, 6],
+            4: [3, 0, 7],
+        }
+        self._face_shape = {
+            1: vtk.VTK_QUADRATIC_EDGE,
+            2: vtk.VTK_QUADRATIC_EDGE,
+            3: vtk.VTK_QUADRATIC_EDGE,
+            4: vtk.VTK_QUADRATIC_EDGE,
+        }
+
+    def _extrapol_matrix(self):
+        """Extrapolation matrix.
+
+        Returns
+        -------
+        array
+
+        """
+        ext_mat = np.asarray([
+            [
+                1.8660254037844386, -0.4999999999999999, 0.13397459621556132,
+                -0.4999999999999999, 0.6830127018922193, -0.1830127018922193,
+                -0.1830127018922193, 0.6830127018922193
+            ],
+            [
+                -0.4999999999999999, 1.8660254037844386, -0.4999999999999999,
+                0.13397459621556132, 0.6830127018922193, 0.6830127018922193,
+                -0.1830127018922193, -0.1830127018922193
+            ],
+            [
+                0.13397459621556132, -0.4999999999999999, 1.8660254037844386,
+                -0.4999999999999999, -0.1830127018922193, 0.6830127018922193,
+                0.6830127018922193, -0.1830127018922193
+            ],
+            [
+                -0.4999999999999999, 0.13397459621556132, -0.4999999999999999,
+                1.8660254037844386, -0.1830127018922193, -0.1830127018922193,
+                0.6830127018922193, 0.6830127018922193
+            ],
+        ])
+
+        return ext_mat
+
+
 class QuadraticHexahedron(Element):
     """20 node quadratic brick element."""
     def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15,
@@ -558,8 +627,8 @@ ELEMENTS = {
     "S4RS": Quad,
     "S4RSW": Quad,
     "S4R5": Quad,
-    "S8R": Quad,
-    "S8R5": Quad,
+    "S8R": QuadraticQuad,
+    "S8R5": QuadraticQuad,
     # 2D Continuum
     "S4R": Quad,
     "CAX4": Quad,
