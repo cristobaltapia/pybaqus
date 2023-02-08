@@ -70,13 +70,16 @@ class Model:
 
         Returns
         -------
-        TODO
+        list :
+            List containing the elements of the created set.
 
         """
         if s_type == "node":
             self.node_sets[name] = elements
+            return self.node_sets[name]
         elif s_type == "element":
             self.element_sets[name] = elements
+            return self.element_sets[name]
 
     def add_deformable_surface(self, name, dimension, master_surf):
         """Add a surface to the model.

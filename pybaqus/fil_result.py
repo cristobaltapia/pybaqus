@@ -80,7 +80,7 @@ class FilParser:
         self._model_dimension: int = None
         self._node_records: list = list()
 
-        self._curr_set: int = None
+        self._curr_set: list = []
         self._tmp_sets: dict = {"element": dict(), "node": dict()}
         self._label_cross_ref: dict = dict()
         self._curr_surface: int = None
@@ -443,26 +443,41 @@ class FilParser:
         ----------
         record : TODO
         add : bool
-            Flags whether records are added to an existing set a new set has to be
+            Flags whether records are added to an existing set or a new set has to be
             created.
         s_type : str
             Type of set ("element", "node")
 
-        Returns
-        -------
-        TODO
-
         """
-
         if add:
             elements = record[2:]
             ref = self._curr_set
-            self._tmp_sets[s_type][ref].extend(elements)
+            self._curr_set.extend(elements)
         else:
             elements = record[3:]
-            ref = int(record[2].strip())
-            self._curr_set = ref
-            self._tmp_sets[s_type][ref] = elements
+            # If the name of the set is longer than 8 chars, then an integer
+            # identifier is given
+            label = record[2].strip()
+
+            try:
+                int(label)
+                integer_label = True
+            except:
+                integer_label = False
+
+            # If we have an integer identifier, then we add the elements to
+            # a temporary dictionary, which is cross-referenced with the real
+            # label later (processing of record 1940).
+            if integer_label:
+                ref = int(label)
+                self._tmp_sets[s_type][ref] = elements
+                self._curr_set = self._tmp_sets[s_type][ref]
+            # Otherwise we create a new set and use it directly.
+            else:
+                label = record[2].strip()
+                curr_set = self.model.add_set(label, elements, s_type)
+                self._curr_set = curr_set
+
 
     def _parse_surface(self, record, add_face):
         """Parse the surface records.
@@ -592,7 +607,9 @@ class FilParser:
             Records parsed from the *.fil file
 
         """
+        # Get reference number of the set
         ref = record[2]
+        # Get name of the set
         label = "".join(record[3:]).strip()
 
         self._label_cross_ref[ref] = label
