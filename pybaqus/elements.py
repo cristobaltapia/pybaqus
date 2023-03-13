@@ -518,7 +518,7 @@ class DistributedCouplingElement(Element):
 
 
 class QuadraticQuad(Element):
-    """4-node rectangular element."""
+    """8-node rectangular element."""
     def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, num, model, code):
         super().__init__(num, model, code)
         self._n_nodes = 4
