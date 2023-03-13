@@ -322,8 +322,7 @@ class Tetra(Element):
         self._nodes = [n1, n2, n3, n4]
         self._elem_type = vtk.VTK_TETRA
 
-        # Define faces connectivity
-        self._faces = {1: [0, 1, 2], 2: [0, 4, 2], 3: [1, 3, 2], 4: [2, 3, 0]}
+        self._faces = {1: [0, 1, 2], 2: [0, 3, 1], 3: [1, 3, 2], 4: [2, 3, 0]}
         self._face_shape = {
             1: vtk.VTK_TRIANGLE,
             2: vtk.VTK_TRIANGLE,
