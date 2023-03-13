@@ -603,6 +603,30 @@ class QuadraticHexahedron(Element):
         }
 
 
+class QuadraticTetra(Element):
+    """10 node quadratic tetra element."""
+    def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, num, model, code):
+        super().__init__(num, model, code)
+        self._n_nodes = 10
+        self._nodes = [
+            n1, n2, n3, n4, n5, n6, n7, n8, n9, n10
+        ]
+        self._elem_type = vtk.VTK_QUADRATIC_TETRA
+
+        # Define faces connectivity
+        self._faces = {
+            1: [0, 1, 2, 4, 5, 6],
+            2: [0, 3, 1, 7, 8, 4],
+            3: [1, 3, 2, 8, 9, 5],
+            4: [2, 3, 0, 9, 7, 6],
+        }
+        self._face_shape = {
+            1: vtk.VTK_QUADRATIC_TRIANGLE,
+            2: vtk.VTK_QUADRATIC_TRIANGLE,
+            3: vtk.VTK_QUADRATIC_TRIANGLE,
+            4: vtk.VTK_QUADRATIC_TRIANGLE,
+        }
+
 ELEMENTS = {
     # Distributed coupling
     "IDCOUP3U": DistributedCouplingElement,
@@ -640,6 +664,7 @@ ELEMENTS = {
     # 3D Continuum
     "C3D4": Tetra,
     "C3D4H": Tetra,
+    "C3D10": QuadraticTetra,
     "C3D5": Pyramid,
     "C3D6": Wedge,
     "C3D6H": Wedge,
@@ -690,6 +715,7 @@ N_INT_PNTS = {
     # 3D Continuum
     "C3D4": 1,
     "C3D4H": 1,
+    "C3D10": 4,
     "C3D6": 2,
     "C3D6H": 2,
     "C3D8": 8,
