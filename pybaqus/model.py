@@ -706,13 +706,10 @@ class Model:
             kmap = {k: ix for k, ix in zip(nodes, new_node_ids)}
             elements = {k: elements[k] for k in elem_ids}
         else:
-            kmap = None
-            #
-            #can replace here the kmap used for get_node_coords of do it outside knowing kmap 
-            #node_ids = sorted(list(self.nodes.keys()))
-            #new_node_ids = np.arange(1, len(node_ids) + 1, 1)
-            ## Map new indices to old indices
-            #kmap = {ix: k for k, ix in zip(new_node_ids, node_ids)}
+            node_ids = sorted(list(self.nodes.keys()))
+            new_node_ids = np.arange(1, len(node_ids) + 1, 1)
+            # Map new indices to old indices. kmap must be according with get_node_coords
+            kmap = {ix: k for k, ix in zip(new_node_ids, node_ids)}
 
         keys = sorted(list(elements.keys()))
 
