@@ -507,6 +507,15 @@ class LineElement(Element):
         return np.ones((2, 1))
 
 
+class VertexElement(Element):
+    """1 node point element."""
+    def __init__(self, n1, num, model, code):
+        super().__init__(num, model, code)
+        self._n_nodes = 1
+        self._nodes = [n1]
+        self._elem_type = vtk.VTK_VERTEX
+
+
 class DistributedCouplingElement(Element):
     """N node distributed coupling element."""
     def __init__(self, *nodes, num, model, code):
