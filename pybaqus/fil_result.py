@@ -632,7 +632,8 @@ class FilParser:
         r_type : str
 
         """
-        tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
+        #tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
+        print(f"Record key {record[1]} ({r_type}) not yet implemented!")
 
     def _reference_elems_in_nodes(self):
         """Add a list to each node with the elements using the node."""

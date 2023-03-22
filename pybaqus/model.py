@@ -618,8 +618,13 @@ class Model:
             # Map new indices to old indices
             kmap = {k: ix for k, ix in zip(keys, old_keys)}
         else:
-            keys = sorted(list(nodes.keys()))
-            kmap = {k: k for k in keys}
+            #keys = sorted(list(nodes.keys()))
+            #kmap = {k: k for k in keys}
+            #the previous assumes that nodes are from 1 to n without jumps!!
+            old_keys = sorted(list(nodes.keys()))
+            keys = np.arange(1, len(old_keys) + 1, 1)
+            # Map new indices to old indices
+            kmap = {k: ix for k, ix in zip(keys, old_keys)}
 
         coords = np.empty((len(keys), 3))
 
@@ -701,7 +706,10 @@ class Model:
             kmap = {k: ix for k, ix in zip(nodes, new_node_ids)}
             elements = {k: elements[k] for k in elem_ids}
         else:
-            kmap = None
+            node_ids = sorted(list(self.nodes.keys()))
+            new_node_ids = np.arange(1, len(node_ids) + 1, 1)
+            # Map new indices to old indices. kmap must be according with get_node_coords
+            kmap = {ix: k for k, ix in zip(new_node_ids, node_ids)}
 
         keys = sorted(list(elements.keys()))
 
