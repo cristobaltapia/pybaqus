@@ -617,9 +617,7 @@ class QuadraticTetra(Element):
     def __init__(self, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, num, model, code):
         super().__init__(num, model, code)
         self._n_nodes = 10
-        self._nodes = [
-            n1, n2, n3, n4, n5, n6, n7, n8, n9, n10
-        ]
+        self._nodes = [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10]
         self._elem_type = vtk.VTK_QUADRATIC_TETRA
 
         # Define faces connectivity
@@ -635,6 +633,7 @@ class QuadraticTetra(Element):
             3: vtk.VTK_QUADRATIC_TRIANGLE,
             4: vtk.VTK_QUADRATIC_TRIANGLE,
         }
+
 
 ELEMENTS = {
     # Distributed coupling
