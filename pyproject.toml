@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pybaqus"
-version = "0.2.9"
+version = "0.2.10"
 description = ""
 authors = ["Cristóbal Tapia Camú <crtapia@gmail.com>"]
 readme = "README.md"
@@ -11,7 +11,7 @@ python = "^3.7.7"
 numpy = "^1.18.2"
 scipy = "^1.4.1"
 matplotlib = "^3.2.1"
-pyvista = "^0.37.0"
+pyvista = "^0.37"
 vtk = "^9.0.3"
 tqdm = "^4.62.3"
 
