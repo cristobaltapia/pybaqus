@@ -21,8 +21,8 @@ yapf = "^0.31.0"
 toml = "^0.10.2"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.dephell.main]
 from = {format = "poetry", path = "pyproject.toml"}

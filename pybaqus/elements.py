@@ -253,6 +253,13 @@ class Quad(Element):
                 [0.1339746, -0.5, 1.8660254, -0.5],
                 [-0.5, 0.1339746, -0.5, 1.8660254],
             ])
+        elif self._n_integ_points == 2:
+            ext_mat = np.asarray([
+                [1.0, 0],
+                [0.0, 1.0],
+                [0.0, 1.0],
+                [1.0, 0],
+            ])
         # One integration point
         else:
             ext_mat = np.ones((4, 1))
@@ -684,6 +691,8 @@ ELEMENTS = {
     "C3D8RS": Hexahedron,
     "C3D20R": QuadraticHexahedron,
     "CSS8": Hexahedron,
+    # Cohesive elements
+    "COH2D4": Quad,
 }
 
 N_INT_PNTS = {
@@ -733,4 +742,6 @@ N_INT_PNTS = {
     "C3D8RS": 1,
     "C3D20R": 8,
     "CSS8": 8,
+    # Cohesive elements
+    "COH2D4": 2,
 }
