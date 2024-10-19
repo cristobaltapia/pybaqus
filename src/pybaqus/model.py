@@ -1,11 +1,13 @@
 """
 Definitions of classes that define the imported model
 """
+
 import numpy as np
 from pyvista import UnstructuredGrid
-from .step import Step
-from .faces import RigidSurface, DeformableSurface, Face
+
 from .elements import N_INT_PNTS
+from .faces import DeformableSurface, Face, RigidSurface
+from .step import Step
 
 
 class Model:
@@ -22,6 +24,7 @@ class Model:
     surfaces : dict
 
     """
+
     def __init__(self):
         self.nodes: dict = dict()
         self.elements: dict = dict()
@@ -159,8 +162,9 @@ class Model:
 
         if elem not in self.elem_output[step][inc][var]:
             etype = self.elements[elem].elem_code
-            self.elem_output[step][inc][var][elem] = np.empty((N_INT_PNTS[etype], 1),
-                                                              dtype=float)
+            self.elem_output[step][inc][var][elem] = np.empty(
+                (N_INT_PNTS[etype], 1), dtype=float
+            )
 
         self.elem_output[step][inc][var][elem][intpnt - 1] = data
 
@@ -244,7 +248,9 @@ class Model:
         """
         self.local_csys[step][inc][elem] = csys
 
-    def get_nodal_result(self, var, step, inc, node_set=None, elem_set=None, node_ids=None):
+    def get_nodal_result(
+        self, var, step, inc, node_set=None, elem_set=None, node_ids=None
+    ):
         """Get nodal results
 
         Parameters
@@ -280,7 +286,9 @@ class Model:
             try:
                 elem_ids = self.elem_output[step][inc][var].keys()
             except KeyError:
-                print(f"Requested output variable {var} not present as element result of the model.")
+                print(
+                    f"Requested output variable {var} not present as element result of the model."
+                )
 
         if var in self.nodal_output[step][inc]:
             results = self.nodal_output[step][inc][var]
@@ -574,7 +582,9 @@ class Model:
         """Add metadata to the model."""
         self.metadata[metadata[0]] = metadata[1]
 
-    def get_node_coords(self, node_set=None, elem_set=None, node_id=None, return_map=False):
+    def get_node_coords(
+        self, node_set=None, elem_set=None, node_id=None, return_map=False
+    ):
         """Get a list with the node coordinates.
 
 
@@ -618,9 +628,9 @@ class Model:
             # Map new indices to old indices
             kmap = {k: ix for k, ix in zip(keys, old_keys)}
         else:
-            #keys = sorted(list(nodes.keys()))
-            #kmap = {k: k for k in keys}
-            #the previous assumes that nodes are from 1 to n without jumps!!
+            # keys = sorted(list(nodes.keys()))
+            # kmap = {k: k for k in keys}
+            # the previous assumes that nodes are from 1 to n without jumps!!
             old_keys = sorted(list(nodes.keys()))
             keys = np.arange(1, len(old_keys) + 1, 1)
             # Map new indices to old indices
@@ -638,8 +648,9 @@ class Model:
         else:
             return coords_ar
 
-    def get_deformed_node_coords(self, step, inc, scale=1, node_id=None, node_set=None,
-                                 elem_set=None):
+    def get_deformed_node_coords(
+        self, step, inc, scale=1, node_id=None, node_set=None, elem_set=None
+    ):
         """Get deformed node coordinates.
 
         Parameters
@@ -659,11 +670,14 @@ class Model:
             2D-Array with the node coordinates
 
         """
-        coords, kmap = self.get_node_coords(node_id=node_id, node_set=node_set,
-                                            elem_set=elem_set, return_map=True)
+        coords, kmap = self.get_node_coords(
+            node_id=node_id, node_set=node_set, elem_set=elem_set, return_map=True
+        )
 
         for k in range(1, np.shape(coords)[0] + 1, 1):
-            coords[k - 1, :] += self._get_node_vector_result(kmap[k], "U", step, inc) * scale
+            coords[k - 1, :] += (
+                self._get_node_vector_result(kmap[k], "U", step, inc) * scale
+            )
 
         return coords
 
@@ -836,17 +850,21 @@ class Model:
         nodal_output = self.nodal_output[step][inc]
 
         if self._dimension == 3:
-            u = np.asarray([
-                nodal_output[f"{var}1"][n],
-                nodal_output[f"{var}2"][n],
-                nodal_output[f"{var}3"][n],
-            ])
+            u = np.asarray(
+                [
+                    nodal_output[f"{var}1"][n],
+                    nodal_output[f"{var}2"][n],
+                    nodal_output[f"{var}3"][n],
+                ]
+            )
         else:
-            u = np.asarray([
-                nodal_output[f"{var}1"][n],
-                nodal_output[f"{var}2"][n],
-                0,
-            ])
+            u = np.asarray(
+                [
+                    nodal_output[f"{var}1"][n],
+                    nodal_output[f"{var}2"][n],
+                    0,
+                ]
+            )
 
         return u
 
