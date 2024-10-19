@@ -4,9 +4,7 @@ Utilities to read the ASCII *.fil files generates by abaqus.
 
 import re
 
-from tqdm import tqdm
-
-from .fil_result import FilParser
+from pybaqus.fil_result import FilParser
 
 
 def open_fil(file_name, progress=False):
