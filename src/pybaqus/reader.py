@@ -25,19 +25,25 @@ def open_fil(file_name, progress=False):
     Result : Object containing the results of the *.fil file
 
     """
-    if progress:
-        print("Reading records...")
+    try:
+        if progress:
+            print("Reading records...")
 
-    records = read_records(file_name)
+        records = read_records(file_name)
 
-    # Create result object
-    if progress:
-        print("Parsing records...")
+        # Create result object
+        if progress:
+            print("Parsing records...")
 
-    result = FilParser(records, progress=progress)
-    del records
+        result = FilParser(records, progress=progress)
+        del records
 
-    return result.model
+        return result.model
+
+    except FileNotFoundError as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 def read_records(file_name: str):
