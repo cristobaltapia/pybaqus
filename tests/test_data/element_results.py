@@ -2,7 +2,7 @@
 
 import numpy as np
 
-ELEMENT_STRESS_CASES = [
+ELEMENT_QUAD_TYPES = [
     {
         "name": "CPE4",
         "variable": "S1",
@@ -31,5 +31,24 @@ ELEMENT_STRESS_CASES = [
         "name": "CPS4R",
         "variable": "S1",
         "expected": np.array([1.705303e-13, 1.705303e-13, 1.705303e-13, 1.705303e-13]),
+    },
+]
+
+# Elements with triangular shapes
+ELEMENT_TRI_TYPES = [
+    {
+        "name": "CPE3",
+        "variable": "S1",
+        "expected": np.array([1.136868e-13, 1.136868e-13, 1.136868e-13]),
+    },
+    {
+        "name": "CPE3H",
+        "variable": "S1",
+        "expected": np.array([-1.136868e-13, -1.136868e-13, -1.136868e-13]),
+    },
+    {
+        "name": "CPS3",
+        "variable": "S1",
+        "expected": np.array([5.684342e-14, 5.684342e-14, 5.684342e-14]),
     },
 ]

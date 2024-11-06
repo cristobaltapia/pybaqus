@@ -8,13 +8,17 @@ SHELL:=/bin/bash
 
 INP_FILES := $(wildcard input/*.inp)
 FIL_FILES := $(subst input,fil,$(subst .inp,.fil,$(INP_FILES)))
+
 # Define the element types used to generate corresponding *.inp files
 ELEM_TYPES_QUAD_4 := CPE4 CPE4H CPS4 CPS4I CPS4R
-ELEM_TYPES_TRI_3 := CPS3
+ELEM_TYPES_TRI_3 := CPE3 CPE3H CPS3
 ELEM_TYPES_QUAD_8 := CPS8
 
 # Generate paths for input files
-INP_TARGETS := $(addprefix input/quad_,$(addsuffix .inp,$(ELEM_TYPES_QUAD_4)))
+INP_TARGETS_QUAD := $(addprefix input/quad_,$(addsuffix .inp,$(ELEM_TYPES_QUAD_4)))
+INP_TARGETS_TRI := $(addprefix input/tri_,$(addsuffix .inp,$(ELEM_TYPES_TRI_3)))
+
+INP_TARGETS := $(INP_TARGETS_TRI) $(INP_TARGETS_QUAD)
 
 .PHONY: all clear $(ELEM_TYPES_QUAD_4)
 
@@ -55,8 +59,14 @@ fil/%.fil: input/%.inp
 	@rm -f $*.dat $*.odb $*.com $*.msg $*.sta $*.log $*.prt
 	@mv $*.fil fil/$*.fil
 
-# Generate individual input files per element type
+# Generate individual input files per element type with quad shape
 input/quad_%.inp: input/templates/elem_quad.inp
+	@mkdir -p input
+	@echo "Generating input file for element type $*..."
+	@sed -e 's/{ELEM_TYPE}/$*/g' $< > $@
+
+# Generate individual input files per element type with triangular shape
+input/tri_%.inp: input/templates/elem_tri.inp
 	@mkdir -p input
 	@echo "Generating input file for element type $*..."
 	@sed -e 's/{ELEM_TYPE}/$*/g' $< > $@
