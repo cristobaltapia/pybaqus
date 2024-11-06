@@ -272,6 +272,14 @@ class Model:
         self._n_elements = ne[0]
         self._n_nodes = ne[1]
 
+    @property
+    def heading(self) -> str:
+        return self._heading
+
+    @heading.setter
+    def heading(self, h: str):
+        self._heading = h
+
     def get_nodal_result(
         self, var, step, inc, node_set=None, elem_set=None, node_ids=None
     ):

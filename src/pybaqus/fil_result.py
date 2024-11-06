@@ -49,7 +49,7 @@ class FilParser:
         1902: ("_parse_active_dof", []),
         1911: ("_parse_output_request", []),
         1921: ("_parse_abaqus_release", []),
-        1922: ("_parse_not_implemented", ["Heading"]),
+        1922: ("_parse_heading", []),
         1931: ("_parse_set", [False, "node"]),
         1932: ("_parse_set", [True, "node"]),
         1933: ("_parse_set", [False, "element"]),
@@ -631,6 +631,10 @@ class FilParser:
         self.model.add_release_info(release, date, time)
         self.model.size = (record[6], record[7])
         self.model.elen = elen
+
+    def _parse_heading(self, record):
+        heading = "".join(record[2:]).strip()
+        self.model.heading = heading
 
     def _parse_not_implemented(self, record, r_type):
         """Helper function to deal with the not yet implemented parsers.

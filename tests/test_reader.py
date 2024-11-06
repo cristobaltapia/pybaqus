@@ -23,8 +23,7 @@ def test_open_fil(fil_path, progress, capsys):
         assert "Reading records..." in captured.out
         assert "Parsing records..." in captured.out
     else:
-        # TODO:
-        assert captured.out == "Record key 1922 (Heading) not yet implemented!\n"
+        assert captured.out == ""
 
 
 def test_open_fil_nonexistent_file():
@@ -47,6 +46,11 @@ def test_abaqus_release(fil_path):
     model = open_fil(fil_path)
     # Check the release
     assert model.release["release"] == "6.23-1"
+
+
+def test_heading(fil_path):
+    model = open_fil(fil_path)
+    assert model.heading == "Description of the model"
 
 
 def test_model_size(fil_path):
