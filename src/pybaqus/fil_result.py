@@ -48,7 +48,7 @@ class FilParser:
         1901: ("_parse_node", []),
         1902: ("_parse_active_dof", []),
         1911: ("_parse_output_request", []),
-        1921: ("_parse_not_implemented", ["Abaqus release, etc."]),
+        1921: ("_parse_abaqus_release", []),
         1922: ("_parse_not_implemented", ["Heading"]),
         1931: ("_parse_set", [False, "node"]),
         1932: ("_parse_set", [True, "node"]),
@@ -478,7 +478,6 @@ class FilParser:
                 curr_set = self.model.add_set(label, elements, s_type)
                 self._curr_set = curr_set
 
-
     def _parse_surface(self, record, add_face):
         """Parse the surface records.
 
@@ -622,6 +621,16 @@ class FilParser:
         elif ref in tmp_sets["node"]:
             elements = tmp_sets["node"][ref]
             self.model.add_set(label, elements, "node")
+
+    def _parse_abaqus_release(self, record):
+        release = record[2].strip()
+        date = (record[3] + record[4]).strip()
+        time = record[5].strip()
+        elen = record[8]
+
+        self.model.add_release_info(release, date, time)
+        self.model.size = (record[6], record[7])
+        self.model.elen = elen
 
     def _parse_not_implemented(self, record, r_type):
         """Helper function to deal with the not yet implemented parsers.

@@ -25,6 +25,9 @@ class Model:
 
     """
 
+    release: dict[str, str]
+    _elen: float  # typical element length of the model
+
     def __init__(self):
         self.nodes: dict = dict()
         self.elements: dict = dict()
@@ -247,6 +250,27 @@ class Model:
 
         """
         self.local_csys[step][inc][elem] = csys
+
+    def add_release_info(self, release, date, time):
+        self.release = {"release": release, "date": date, "time": time}
+
+    @property
+    def elen(self):
+        return self._elen
+
+    @elen.setter
+    def elen(self, length):
+        """Typical element length of the model."""
+        self._elen = length
+
+    @property
+    def size(self):
+        return {"elements": self._n_elements, "nodes": self._n_nodes}
+
+    @size.setter
+    def size(self, ne):
+        self._n_elements = ne[0]
+        self._n_nodes = ne[1]
 
     def get_nodal_result(
         self, var, step, inc, node_set=None, elem_set=None, node_ids=None
