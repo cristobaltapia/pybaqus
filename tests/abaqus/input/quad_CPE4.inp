@@ -26,7 +26,7 @@
  1,
 ** Section: test-section
 *Solid Section, elset=set-test_part, material=test-material
-1.,
+0.1,
 *End Instance
 **  
 *Nset, nset=set_load, internal, instance=test_instance
@@ -41,7 +41,7 @@
 ** 
 *Material, name=test-material
 *Elastic
-10e06, 0.25
+1e05, 0.25
 ** 
 ** BOUNDARY CONDITIONS
 ** 
@@ -64,7 +64,7 @@ set_bc_2, 2, 2
 ** 
 ** Name: test-load   Type: Concentrated force
 *Cload
-set_load, 2, 1.
+set_load, 2, 1e03
 ** 
 ** OUTPUT REQUESTS
 ** 

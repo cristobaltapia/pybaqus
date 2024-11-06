@@ -5,7 +5,7 @@ from pybaqus.reader import open_fil, read_records
 
 @pytest.fixture
 def sample_fil_path():
-    return "tests/fil_files/tetra_10.fil"
+    return "tests/abaqus/fil/quad_CPE4.fil"
 
 
 def test_read_records(sample_fil_path):
@@ -42,7 +42,7 @@ def test_open_fil_nonexistent_file():
 @pytest.mark.parametrize(
     "file_path,expected_record_count",
     [
-        ("./tests/fil_files/tetra_10.fil", 1063),
+        ("tests/abaqus/fil/quad_CPE4.fil", 50),
     ],
 )
 def test_read_records_count(file_path, expected_record_count):
