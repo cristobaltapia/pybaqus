@@ -15,9 +15,6 @@ dependencies = [
     "vtk>=9.3.1",
 ]
 
-[project.scripts]
-pybaqus = "pybaqus:main"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
