@@ -1,2 +1,6 @@
 poetry.lock
-pybaqus/__pycache__/
+build/
+dist/
+*.rpy
+*.egg-info
+__pycache__/
