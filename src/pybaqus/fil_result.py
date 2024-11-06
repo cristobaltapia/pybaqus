@@ -424,14 +424,16 @@ class FilParser:
 
         """
         active_dof = np.asarray(record[2:], dtype=int)
+        # Determine the dimension of the model
         dimension = np.sum(np.not_equal(active_dof[:3], np.zeros(3)), dtype=int)
         self._model_dimension = dimension
         self.model._dimension = dimension
 
         # (k + 1): because the dof's start at 1
-        # (val -1): because they will be reference to a list, which is 0-indexed
-        self._dof_map = {(k + 1): (val - 1) if val != 0 else 0
-                         for k, val in enumerate(active_dof)}
+        # (val - 1): because they will be referenced to a list, which is 0-indexed
+        # self._dof_map = {(k + 1): (val - 1) if val != 0 else 0
+        #                  for k, val in enumerate(active_dof)}
+        self._dof_map = active_dof
 
         # Process all nodes
         self._parse_all_nodes()

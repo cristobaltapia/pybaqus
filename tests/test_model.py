@@ -1,9 +1,14 @@
 import pytest
 from pybaqus.model import Model
+from pybaqus.nodes import Node2D, Node3D
 
 @pytest.fixture
 def empty_model():
     return Model()
+
+# @pytest.fixture
+# def new_2D_node():
+#     return Node2D(1, dof_map=[])
 
 def test_model_initialization(empty_model):
     assert isinstance(empty_model, Model)

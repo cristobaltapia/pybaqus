@@ -1,6 +1,7 @@
 """
 Definition of node objects.
 """
+
 import numpy as np
 
 
@@ -16,14 +17,8 @@ class Node:
 
     """
 
-    def __init__(self, num, model):
+    def __init__(self, num: int, model):
         self._num: int = num
-        self._x: float = None
-        self._y: float = None
-        self._z: float = None
-        self._rx: float = None
-        self._ry: float = None
-        self._rz: float = None
         self.model = model
         self._in_elements = None
 
@@ -73,18 +68,26 @@ class Node2D(Node):
 
     Parameters
     ----------
-    x : TODO
-    y : TODO
-    num : TODO
+    num : int
+        ID of the node
+    dof_map : dict
+        Dictionary mapping the active DOF to each nodal output position
+    model : `obj`:Model
+        Model to which the node belongs to.
+    *dof :
+        The values for all degrees of freedom.
 
     """
+    _x: float
+    _y: float
+    _rz: float
 
-    def __init__(self, num, dof_map, model, *dof):
+    def __init__(self, num: int, dof_map, model, *dof):
         super().__init__(num, model)
 
-        self._x = float(dof[dof_map[1]])
-        self._y = float(dof[dof_map[2]])
-        self._rz = float(dof[dof_map[6]])
+        self._x = dof[dof_map[0] - 1]
+        self._y = dof[dof_map[1] - 1]
+        self._rz = dof[dof_map[5] - 1] if dof_map[5] > 0 else np.nan
         self._num = num
 
     def _get_coords(self):
@@ -106,16 +109,22 @@ class Node3D(Node):
         The values for all degree of freedom.
 
     """
+    _x: float
+    _y: float
+    _z: float
+    _rx: float
+    _ry: float
+    _rz: float
 
     def __init__(self, num, dof_map, model, *dof):
         super().__init__(num, model)
 
-        self._x = float(dof[dof_map[1]])
-        self._y = float(dof[dof_map[2]])
-        self._z = float(dof[dof_map[3]])
-        self._rx = float(dof[dof_map[4]])
-        self._ry = float(dof[dof_map[5]])
-        self._rz = float(dof[dof_map[6]])
+        self._x = dof[dof_map[0] - 1]
+        self._y = dof[dof_map[1] - 1]
+        self._z = dof[dof_map[2] - 1]
+        self._rx = dof[dof_map[3] - 1] if dof_map[3] > 0 else np.nan
+        self._ry = dof[dof_map[4] - 1] if dof_map[4] > 0 else np.nan
+        self._rz = dof[dof_map[5] - 1] if dof_map[5] > 0 else np.nan
         self._num = num
 
     def _get_coords(self):

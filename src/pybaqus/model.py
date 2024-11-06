@@ -5,8 +5,9 @@ Definitions of classes that define the imported model
 import numpy as np
 from pyvista import UnstructuredGrid
 
-from .elements import N_INT_PNTS
+from .elements import Element, N_INT_PNTS
 from .faces import DeformableSurface, Face, RigidSurface
+from .nodes import Node
 from .step import Step
 
 
@@ -61,10 +62,10 @@ class Model:
         """
         self._status = n
 
-    def add_node(self, node):
+    def add_node(self, node: Node):
         self.nodes[node._num] = node
 
-    def add_element(self, element):
+    def add_element(self, element: Element):
         self.elements[element.num] = element
 
     def add_set(self, name, elements, s_type):
