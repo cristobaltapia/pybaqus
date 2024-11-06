@@ -668,7 +668,6 @@ ELEMENTS = {
     "S8R": QuadraticQuad,
     "S8R5": QuadraticQuad,
     # 2D Continuum
-    "S4R": Quad,
     "CAX4": Quad,
     "CPS4": Quad,
     "CPE4": Quad,
@@ -724,7 +723,6 @@ N_INT_PNTS = {
     "S8R": 4,
     "S8R5": 4,
     # 2D Continuum
-    "S4R": 1,
     "CAX4": 4,
     "CPS4": 4,
     "CPE4": 4,
