@@ -10,8 +10,10 @@ from test_data.element_results import ELEMENT_STRESS_CASES
 def test_element_stress(test_case):
     """Test element stress results for different element types.
 
-    Args:
-        test_case: Dictionary containing test parameters and expected results
+    Parameters
+    ----------
+        test_case:
+            Dictionary containing test parameters and expected results
     """
     model = open_fil(f"tests/abaqus/fil/quad_{test_case['name']}.fil")
     stress = model.get_nodal_result(var=test_case["variable"], step=1, inc=1)
