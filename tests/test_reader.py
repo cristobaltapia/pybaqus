@@ -13,20 +13,18 @@ def test_read_records(fil_path):
     assert hasattr(records, "__iter__")  # Check if it's an iterator
 
 
-# @pytest.mark.parametrize("progress", [False, True])
-# def test_open_fil(sample_fil_path, progress, capsys):
-#     result = open_fil(sample_fil_path, progress=progress)
-#     assert result is not None
-#
-#     captured = capsys.readouterr()
-#     if progress:
-#         assert "Reading records..." in captured.out
-#         assert "Parsing records..." in captured.out
-#     else:
-#         assert (
-#             captured.out
-#             == "Record key 1921 (Abaqus release, etc.) not yet implemented!\nRecord key 1922 (Heading) not yet implemented!\n"
-#         )
+@pytest.mark.parametrize("progress", [False, True])
+def test_open_fil(fil_path, progress, capsys):
+    result = open_fil(fil_path, progress=progress)
+    assert result is not None
+
+    captured = capsys.readouterr()
+    if progress:
+        assert "Reading records..." in captured.out
+        assert "Parsing records..." in captured.out
+    else:
+        # TODO:
+        assert captured.out == "Record key 1922 (Heading) not yet implemented!\n"
 
 
 def test_open_fil_nonexistent_file():
@@ -50,7 +48,13 @@ def test_abaqus_release(fil_path):
     # Check the release
     assert model.release["release"] == "6.23-1"
 
+
 def test_model_size(fil_path):
     model = open_fil(fil_path)
     assert model.size["elements"] == len(model.elements)
+    assert model.size["nodes"] == len(model.nodes)
+
+
+def test_discontinuous_nodes():
+    model = open_fil("tests/abaqus/fil/discontinuous_numbering_2D.fil")
     assert model.size["nodes"] == len(model.nodes)
