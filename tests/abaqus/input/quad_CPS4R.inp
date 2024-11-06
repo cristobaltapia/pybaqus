@@ -1,0 +1,91 @@
+*Heading
+ Description of the model
+*Preprint, echo=NO, model=NO, history=NO, contact=NO
+**
+** PARTS
+**
+*Part, name=test_part
+*End Part
+**  
+**
+** ASSEMBLY
+**
+*Assembly, name=Assembly
+**  
+*Instance, name=test_instance, part=test_part
+*Node
+      1,  0.1,  0.2
+      2,  12.9, 0.2
+      3,  0.1,  10.5
+      4,  12.9, 10.5
+*Element, type=CPS4R
+1, 1, 2, 4, 3
+*Nset, nset=set-test_part, generate
+ 1,  4,  1
+*Elset, elset=set-test_part
+ 1,
+** Section: test-section
+*Solid Section, elset=set-test_part, material=test-material
+1.,
+*End Instance
+**  
+*Nset, nset=set_load, internal, instance=test_instance
+ 4, 3
+*Nset, nset=set_bc_1, internal, instance=test_instance
+ 1,
+*Nset, nset=set_bc_2, internal, instance=test_instance
+ 2,
+*End Assembly
+** 
+** MATERIALS
+** 
+*Material, name=test-material
+*Elastic
+10e06, 0.25
+** 
+** BOUNDARY CONDITIONS
+** 
+** Name: test-bc-1 Type: Displacement/Rotation
+*Boundary
+set_bc_1, 1, 1
+set_bc_1, 2, 2
+** Name: test-bc-2 Type: Displacement/Rotation
+*Boundary
+set_bc_2, 2, 2
+** ----------------------------------------------------------------
+** 
+** STEP: test-step
+** 
+*Step, name=test-step, nlgeom=NO, inc=10
+*Static
+1., 1., 1e-05, 1.
+** 
+** LOADS
+** 
+** Name: test-load   Type: Concentrated force
+*Cload
+set_load, 2, 1.
+** 
+** OUTPUT REQUESTS
+** 
+*Restart, write, frequency=0
+** 
+** FIELD OUTPUT: F-Output-1
+** 
+*Output, field, variable=PRESELECT
+** 
+** HISTORY OUTPUT: H-Output-1
+** 
+*Output, history, variable=PRESELECT
+** 
+** Output to ASCII-file
+** 
+*FILE FORMAT, ASCII
+**
+*EL FILE
+S, E, COORD
+**
+*NODE FILE
+COORD, U
+**
+*End Step
