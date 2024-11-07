@@ -61,10 +61,10 @@ def test_discontinuous_nodes():
 
 def test_parse_node_2d(fil_path_2d):
     model = open_fil(fil_path_2d)
-    n1 = model.nodes[1]
-    n2 = model.nodes[2]
-    n3 = model.nodes[3]
-    n4 = model.nodes[4]
+    n1 = model.nodes[0]
+    n2 = model.nodes[1]
+    n3 = model.nodes[2]
+    n4 = model.nodes[3]
 
     assert_allclose(n1.coords, [0.1, 0.2, 0.0])
     assert_allclose(n2.coords, [12.9, 0.2, 0.0])
@@ -74,14 +74,14 @@ def test_parse_node_2d(fil_path_2d):
 
 def test_parse_node_3d(fil_path_3d):
     model = open_fil(fil_path_3d)
-    n1 = model.nodes[1]
-    n2 = model.nodes[2]
-    n3 = model.nodes[3]
-    n4 = model.nodes[4]
-    n5 = model.nodes[5]
-    n6 = model.nodes[6]
-    n7 = model.nodes[7]
-    n8 = model.nodes[8]
+    n1 = model.nodes[0]
+    n2 = model.nodes[1]
+    n3 = model.nodes[2]
+    n4 = model.nodes[3]
+    n5 = model.nodes[4]
+    n6 = model.nodes[5]
+    n7 = model.nodes[6]
+    n8 = model.nodes[7]
 
     assert_allclose(n1.coords, [0.0, 0.0, 0.0])
     assert_allclose(n2.coords, [10.0, 0.0, 0.0])

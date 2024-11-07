@@ -334,6 +334,9 @@ class FilParser:
         self._model_dimension: int = None
         self._node_records: list = list()
 
+        # Keep track of the current node
+        self._curr_node: int = 0
+        self._node_map: dict[int, int] = dict()
         self._curr_set: list = []
         self._tmp_sets: dict = {"element": dict(), "node": dict()}
         self._label_cross_ref: dict = dict()
@@ -374,6 +377,7 @@ class FilParser:
         # Execute post-read actions on the model
         self._post_parse_all_surfaces()
         self._reference_elems_in_nodes()
+        self._map_node_indices_to_elements()
         self.model.post_import_actions()
 
     def _convert_record(self, record):
@@ -430,15 +434,17 @@ class FilParser:
             self._node_records.append(record)
         else:
             n_number = record[2]
+            self._node_map[n_number] = self._curr_node
             dofs = record[3:]
             dof_map = self._dof_map
 
             if self._model_dimension == 2:
-                node = Node2D(n_number, dof_map, self.model, *dofs)
+                node = Node2D(self._curr_node, dof_map, self.model, *dofs)
             else:
-                node = Node3D(n_number, dof_map, self.model, *dofs)
+                node = Node3D(self._curr_node, dof_map, self.model, *dofs)
 
             self.model.add_node(node)
+            self._curr_node += 1
 
     def _parse_all_nodes(self):
         """Parse all nodes.
@@ -560,11 +566,13 @@ class FilParser:
         inc = self._curr_inc
 
         if len(record) > 2:
+            node_ix = self._node_map[record[2]]
             for ix, r_i in enumerate(record[3:], start=1):
-                self.model.add_nodal_output(node=record[2], var=f"{var}{ix}", data=r_i,
+                self.model.add_nodal_output(node=node_ix, var=f"{var}{ix}", data=r_i,
                                             step=step, inc=inc)
         else:
-            self.model.add_nodal_output(node=record[0], var=var, data=record[1], step=step,
+            node_ix = self._node_map[record[0]]
+            self.model.add_nodal_output(node=node_ix, var=var, data=record[1], step=step,
                                         inc=inc)
 
         return 1
@@ -912,4 +920,9 @@ class FilParser:
         model = self.model
 
         for ni, elems in self._node_elems.items():
-            model.nodes[ni].in_elements = elems
+            model.nodes[self._node_map[ni]].in_elements = elems
+
+    def _map_node_indices_to_elements(self):
+        """Map the new node indices to the elements."""
+        for _, e in self.model.elements.items():
+            e._nodes = [self._node_map[n] for n in e._nodes]
