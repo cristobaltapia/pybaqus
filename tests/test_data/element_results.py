@@ -52,3 +52,23 @@ ELEMENT_TRI_TYPES = [
         "expected": np.array([5.684342e-14, 5.684342e-14, 5.684342e-14]),
     },
 ]
+
+# 3D Elements with hexagonal shapes
+ELEMENT_HEX_TYPES = [
+    {
+        "name": "C3D8",
+        "variable": "S1",
+        "expected": np.array(
+            [
+                -14.264411,
+                19.535111,
+                -8.00401,
+                24.748814,
+                2.043412,
+                -12.121549,
+                8.303813,
+                -6.907847,
+            ]
+        ),
+    },
+]

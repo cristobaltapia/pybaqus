@@ -50,7 +50,7 @@ def test_abaqus_release(fil_path):
 
 def test_heading(fil_path):
     model = open_fil(fil_path)
-    assert model.heading == "Description of the model"
+    assert model.heading == "Test elements of the type CPE4 with quad shape"
 
 
 def test_model_size(fil_path):

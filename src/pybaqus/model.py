@@ -2,10 +2,12 @@
 Definitions of classes that define the imported model
 """
 
+from typing import Literal
+
 import numpy as np
 from pyvista import UnstructuredGrid
 
-from .elements import Element, N_INT_PNTS
+from .elements import N_INT_PNTS, Element
 from .faces import DeformableSurface, Face, RigidSurface
 from .nodes import Node
 from .step import Step
@@ -68,7 +70,9 @@ class Model:
     def add_element(self, element: Element):
         self.elements[element.num] = element
 
-    def add_set(self, name, elements, s_type):
+    def add_set(
+        self, name: str, elements: list[int], s_type: Literal["element", "node"]
+    ):
         """Add an element set.
 
         Parameters

@@ -13,14 +13,16 @@ FIL_FILES := $(subst input,fil,$(subst .inp,.fil,$(INP_FILES)))
 ELEM_TYPES_QUAD_4 := CPE4 CPE4H CPS4 CPS4I CPS4R
 ELEM_TYPES_TRI_3 := CPE3 CPE3H CPS3
 ELEM_TYPES_QUAD_8 := CPS8
+ELEM_TYPES_HEX_8 := C3D8
 
 # Generate paths for input files
 INP_TARGETS_QUAD := $(addprefix input/quad_,$(addsuffix .inp,$(ELEM_TYPES_QUAD_4)))
 INP_TARGETS_TRI := $(addprefix input/tri_,$(addsuffix .inp,$(ELEM_TYPES_TRI_3)))
+INP_TARGETS_HEX := $(addprefix input/hex_,$(addsuffix .inp,$(ELEM_TYPES_HEX_8)))
 
-INP_TARGETS := $(INP_TARGETS_TRI) $(INP_TARGETS_QUAD)
+INP_TARGETS := $(INP_TARGETS_TRI) $(INP_TARGETS_QUAD) $(INP_TARGETS_HEX)
 
-.PHONY: all clear $(ELEM_TYPES_QUAD_4)
+.PHONY: all clear
 
 all: $(INP_TARGETS) $(FIL_FILES)
 
@@ -67,6 +69,12 @@ input/quad_%.inp: input/templates/elem_quad.inp
 
 # Generate individual input files per element type with triangular shape
 input/tri_%.inp: input/templates/elem_tri.inp
+	@mkdir -p input
+	@echo "Generating input file for element type $*..."
+	@sed -e 's/{ELEM_TYPE}/$*/g' $< > $@
+
+# Generate individual input files per element type with hexagonal shape
+input/hex_%.inp: input/templates/elem_hex.inp
 	@mkdir -p input
 	@echo "Generating input file for element type $*..."
 	@sed -e 's/{ELEM_TYPE}/$*/g' $< > $@
