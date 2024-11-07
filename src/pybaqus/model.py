@@ -32,8 +32,8 @@ class Model:
     _elen: float  # typical element length of the model
 
     def __init__(self):
-        self.nodes: dict = dict()
-        self.elements: dict = dict()
+        self.nodes: dict[int, Node] = dict()
+        self.elements: dict[int, Element] = dict()
         self.element_sets: dict = dict()
         self.node_sets: dict = dict()
         self.surfaces: dict = dict()
