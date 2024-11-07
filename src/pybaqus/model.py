@@ -5,6 +5,7 @@ Definitions of classes that define the imported model
 from typing import Literal
 
 import numpy as np
+from numpy.typing import NDArray
 from pyvista import UnstructuredGrid
 
 from .elements import N_INT_PNTS, Element
@@ -32,7 +33,7 @@ class Model:
     _elen: float  # typical element length of the model
 
     def __init__(self):
-        self.nodes: dict[int, Node] = dict()
+        self.nodes: NDArray = None
         self.elements: dict[int, Element] = dict()
         self.element_sets: dict = dict()
         self.node_sets: dict = dict()
@@ -274,6 +275,7 @@ class Model:
 
     @size.setter
     def size(self, ne):
+        self.nodes = np.empty(shape=(ne[1]), dtype=Node)
         self._n_elements = ne[0]
         self._n_nodes = ne[1]
 
@@ -319,7 +321,7 @@ class Model:
             keys = sorted(node_ids)
         else:
             # FIXME: have this variable sorted globally
-            keys = sorted(list(self.nodes.keys()))
+            keys = range(len(self.nodes))
             try:
                 elem_ids = self.elem_output[step][inc][var].keys()
             except KeyError:
@@ -365,8 +367,8 @@ class Model:
 
         # FIXME: there are some hacky things here. Try to fix that
         nodes = self.nodes
-        res_nodes = np.zeros(len(nodes) + 1)
-        counter = np.zeros(len(nodes) + 1)
+        res_nodes = np.zeros(len(nodes))
+        counter = np.zeros(len(nodes))
 
         for ix in keys_out:
             var_i = output[ix]
