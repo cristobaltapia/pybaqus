@@ -310,7 +310,7 @@ class Model:
         """
         # Get the keys of the nodes in the set of nodes
         if node_set is not None:
-            keys = sorted(self.get_nodes_from_set(node_set))
+            keys = self.node_sets[node_set]
             elem_ids = self.get_elems_from_nodes(keys)
         # Get elements belonging to the set
         elif elem_set is not None:
