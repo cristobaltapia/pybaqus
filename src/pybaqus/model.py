@@ -2,7 +2,7 @@
 Definitions of classes that define the imported model
 """
 
-from typing import Literal
+from typing import Literal, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -288,7 +288,13 @@ class Model:
         self._heading = h
 
     def get_nodal_result(
-        self, var, step, inc, node_set=None, elem_set=None, node_ids=None
+        self,
+        var: str,
+        step: int,
+        inc: int,
+        node_set: Optional[str | list[str]] = None,
+        elem_set: Optional[str | list[str]] = None,
+        node_idx: list[int] = [],
     ):
         """Get nodal results
 
@@ -309,21 +315,20 @@ class Model:
 
         """
         # Get the keys of the nodes in the set of nodes
-        if node_set is not None:
-            keys = self.node_sets[node_set]
-            elem_ids = self.get_elems_from_nodes(keys)
+        if node_set in self.node_sets:
+            node_idx = self.node_sets[node_set]
+            elem_idx = self.get_elems_from_nodes(node_idx)
         # Get elements belonging to the set
-        elif elem_set is not None:
-            elem_ids = self.get_elems_from_set(elem_set)
-            keys = sorted(self.get_nodes_from_elems(elem_ids))
-        elif node_ids is not None:
-            elem_ids = self.get_elems_from_nodes(node_ids)
-            keys = sorted(node_ids)
+        elif elem_set in self.element_sets:
+            elem_idx = self.get_elems_from_set(elem_set)
+            node_idx = sorted(self.get_nodes_from_elems(elem_idx))
+        elif len(node_idx) > 0:
+            elem_idx = self.get_elems_from_nodes(node_idx)
+            node_idx = sorted(node_idx)
         else:
-            # FIXME: have this variable sorted globally
-            keys = range(len(self.nodes))
+            node_idx = [n.id for n in self.nodes]
             try:
-                elem_ids = self.elem_output[step][inc][var].keys()
+                elem_idx = self.elem_output[step][inc][var].keys()
             except KeyError:
                 print(
                     f"Requested output variable {var} not present as element result of the model."
@@ -332,12 +337,12 @@ class Model:
         if var in self.nodal_output[step][inc]:
             results = self.nodal_output[step][inc][var]
         elif var in self.elem_output[step][inc]:
-            results = self._nodal_result_from_elements(var, step, inc, elem_ids)
+            results = self._nodal_result_from_elements(var, step, inc, elem_idx)
         else:
             # FIXME: handle errors properly some day
             print("Variable not present")
 
-        list_res = [results[k] for k in keys]
+        list_res = [results[k] for k in node_idx]
 
         return np.asarray(list_res)
 
@@ -956,7 +961,7 @@ class Model:
             nodes += elements[el]._nodes
 
         # Remove duplicates
-        nodes_ar = np.asarray(nodes, dtype=int)
+        nodes_ar = np.sort(np.asarray(nodes, dtype=int))
 
         return np.unique(nodes_ar)
 

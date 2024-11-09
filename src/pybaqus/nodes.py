@@ -23,6 +23,10 @@ class Node:
         self._in_elements = None
 
     @property
+    def id(self):
+        return self._num
+
+    @property
     def x(self):
         return self._x
 
@@ -78,6 +82,7 @@ class Node2D(Node):
         The values for all degrees of freedom.
 
     """
+
     _x: float
     _y: float
     _rz: float
@@ -109,6 +114,7 @@ class Node3D(Node):
         The values for all degree of freedom.
 
     """
+
     _x: float
     _y: float
     _z: float
