@@ -73,3 +73,32 @@ def test_discontinuous_nodes():
 def test_read_records_count(file_path, expected_record_count):
     records = list(read_records(file_path))
     assert len(records) == expected_record_count
+
+
+def test_node_sets_2D(fil_path_2d):
+    model = open_fil(fil_path_2d)
+    node_sets = model.node_sets
+    expected_sets = {
+        "ASSEMBLY_SET_BC_1": [1],
+        "ASSEMBLY_SET_BC_2": [2],
+        "ASSEMBLY_SET_LOAD": [3, 4],
+    }
+
+    assert expected_sets.keys() == node_sets.keys()
+    for k, v in expected_sets.items():
+        assert v == node_sets[k]
+
+
+def test_node_sets_3D(fil_path_3d):
+    model = open_fil(fil_path_3d)
+    node_sets = model.node_sets
+    expected_sets = {
+        "ASSEMBLY_SET_BC_1": [1],
+        "ASSEMBLY_SET_BC_2": [4],
+        "ASSEMBLY_SET_BC_3": [2, 3],
+        "ASSEMBLY_SET_LOAD": [5, 6, 7, 8],
+    }
+
+    assert expected_sets.keys() == node_sets.keys()
+    for k, v in expected_sets.items():
+        assert v == node_sets[k]
