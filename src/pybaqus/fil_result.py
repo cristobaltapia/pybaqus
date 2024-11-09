@@ -2,15 +2,16 @@
 Class for the Fil results
 see ABAQUS Analysis User's Manual. FILE OUTPUT FORMAT (ANALYSIS_1.pdf)
 """
+
 import re
 import logging
 
 import numpy as np
 from tqdm import tqdm
 
+from .elements import ELEMENTS, N_INT_PNTS
 from .model import Model
 from .nodes import Node2D, Node3D
-from .elements import ELEMENTS, N_INT_PNTS
 
 _log = logging.getLogger(__name__)
 
@@ -358,8 +359,13 @@ class FilParser:
         )
 
         # Parse each record
-        for r_i in tqdm(records, disable=(not progress), leave=False, unit="record",
-                        dynamic_ncols=True):
+        for r_i in tqdm(
+            records,
+            disable=(not progress),
+            leave=False,
+            unit="record",
+            dynamic_ncols=True,
+        ):
             m_rec = pattern.findall(r_i)
 
             # Get each variable
@@ -378,6 +384,7 @@ class FilParser:
         self._post_parse_all_surfaces()
         self._reference_elems_in_nodes()
         self._map_node_indices_to_elements()
+        self._map_node_indices_to_node_sets()
         self.model.post_import_actions()
 
     def _convert_record(self, record):
@@ -497,7 +504,9 @@ class FilParser:
 
             # Append all the records
             for ix, data in enumerate(record[2:], start=1):
-                self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc, int_point)
+                self.model.add_elem_output(
+                    n_elem, f"{var}{ix}", data, step, inc, int_point
+                )
 
         elif flag_out == 1:
             n_node = self._curr_elem_out
@@ -568,15 +577,18 @@ class FilParser:
         if len(record) > 2:
             node_ix = self._node_map[record[2]]
             for ix, r_i in enumerate(record[3:], start=1):
-                self.model.add_nodal_output(node=node_ix, var=f"{var}{ix}", data=r_i,
-                                            step=step, inc=inc)
+                self.model.add_nodal_output(
+                    node=node_ix, var=f"{var}{ix}", data=r_i, step=step, inc=inc
+                )
         else:
             node_ix = self._node_map[record[0]]
-            self.model.add_nodal_output(node=node_ix, var=var, data=record[1], step=step,
-                                        inc=inc)
+            self.model.add_nodal_output(
+                node=node_ix, var=var, data=record[1], step=step, inc=inc
+            )
 
         return 1
 
+    # TODO: test this function
     def _parse_surface_output(self, record, var):
         """Parse results from surfaces.
 
@@ -596,8 +608,13 @@ class FilParser:
         node = self._curr_output_node
 
         for ix, comp_i in enumerate(record[2:]):
-            self.model.add_nodal_output(node=node, var=self.CONTACT_OUT[var][ix],
-                                        data=comp_i, step=step, inc=inc)
+            self.model.add_nodal_output(
+                node=node,
+                var=self.CONTACT_OUT[var][ix],
+                data=comp_i,
+                step=step,
+                inc=inc,
+            )
 
     def _parse_contact_output_request(self, record):
         """Parse surfaces and nodes associated to contact pair.
@@ -724,18 +741,11 @@ class FilParser:
             elements = record[3:]
             # If the name of the set is longer than 8 chars, then an integer
             # identifier is given
-            label = record[2].strip()
-
-            try:
-                int(label)
-                integer_label = True
-            except:
-                integer_label = False
-
+            label: str = record[2].strip()
             # If we have an integer identifier, then we add the elements to
             # a temporary dictionary, which is cross-referenced with the real
             # label later (processing of record 1940).
-            if integer_label:
+            if label.isdigit():
                 ref = int(label)
                 self._tmp_sets[s_type][ref] = elements
                 self._curr_set = self._tmp_sets[s_type][ref]
@@ -912,7 +922,7 @@ class FilParser:
         r_type : str
 
         """
-        #tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
+        # tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
         print(f"Record key {record[1]} ({r_type}) not yet implemented!")
 
     def _reference_elems_in_nodes(self):
@@ -926,3 +936,8 @@ class FilParser:
         """Map the new node indices to the elements."""
         for _, e in self.model.elements.items():
             e._nodes = [self._node_map[n] for n in e._nodes]
+
+    def _map_node_indices_to_node_sets(self):
+        """Map the new node indices to the node sets."""
+        for k, e in self.model.node_sets.items():
+            self.model.node_sets[k] = [self._node_map[n] for n in e]
