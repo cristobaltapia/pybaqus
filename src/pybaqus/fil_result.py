@@ -3,8 +3,8 @@ Class for the Fil results
 see ABAQUS Analysis User's Manual. FILE OUTPUT FORMAT (ANALYSIS_1.pdf)
 """
 
-import logging
 import re
+import logging
 
 import numpy as np
 from numpy.typing import NDArray
@@ -385,6 +385,7 @@ class FilParser:
         self._post_parse_all_surfaces()
         self._reference_elems_in_nodes()
         self._map_node_indices_to_elements()
+        self._map_node_indices_to_node_sets()
         self.model.post_import_actions()
 
     def _convert_record(self, record):
@@ -577,15 +578,18 @@ class FilParser:
         if len(record) > 2:
             node_ix = self._node_map[record[2]]
             for ix, r_i in enumerate(record[3:], start=1):
-                self.model.add_nodal_output(node=node_ix, var=f"{var}{ix}", data=r_i,
-                                            step=step, inc=inc)
+                self.model.add_nodal_output(
+                    node=node_ix, var=f"{var}{ix}", data=r_i, step=step, inc=inc
+                )
         else:
             node_ix = self._node_map[record[0]]
-            self.model.add_nodal_output(node=node_ix, var=var, data=record[1], step=step,
-                                        inc=inc)
+            self.model.add_nodal_output(
+                node=node_ix, var=var, data=record[1], step=step, inc=inc
+            )
 
         return 1
 
+    # TODO: test this function
     def _parse_surface_output(self, record, var):
         """Parse results from surfaces.
 
@@ -738,18 +742,11 @@ class FilParser:
             elements = record[3:]
             # If the name of the set is longer than 8 chars, then an integer
             # identifier is given
-            label = record[2].strip()
-
-            try:
-                int(label)
-                integer_label = True
-            except:
-                integer_label = False
-
+            label: str = record[2].strip()
             # If we have an integer identifier, then we add the elements to
             # a temporary dictionary, which is cross-referenced with the real
             # label later (processing of record 1940).
-            if integer_label:
+            if label.isdigit():
                 ref = int(label)
                 self._tmp_sets[s_type][ref] = elements
                 self._curr_set = self._tmp_sets[s_type][ref]
@@ -940,3 +937,8 @@ class FilParser:
         """Map the new node indices to the elements."""
         for _, e in self.model.elements.items():
             e._nodes = [self._node_map[n] for n in e._nodes]
+
+    def _map_node_indices_to_node_sets(self):
+        """Map the new node indices to the node sets."""
+        for k, e in self.model.node_sets.items():
+            self.model.node_sets[k] = [self._node_map[n] for n in e]
