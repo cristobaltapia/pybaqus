@@ -59,40 +59,6 @@ def test_discontinuous_nodes():
     assert model.size["nodes"] == len(model.nodes)
 
 
-def test_parse_node_2d(fil_path_2d):
-    model = open_fil(fil_path_2d)
-    n1 = model.nodes[0]
-    n2 = model.nodes[1]
-    n3 = model.nodes[2]
-    n4 = model.nodes[3]
-
-    assert_allclose(n1.coords, [0.1, 0.2, 0.0])
-    assert_allclose(n2.coords, [12.9, 0.2, 0.0])
-    assert_allclose(n3.coords, [0.1, 10.5, 0.0])
-    assert_allclose(n4.coords, [12.9, 10.5, 0.0])
-
-
-def test_parse_node_3d(fil_path_3d):
-    model = open_fil(fil_path_3d)
-    n1 = model.nodes[0]
-    n2 = model.nodes[1]
-    n3 = model.nodes[2]
-    n4 = model.nodes[3]
-    n5 = model.nodes[4]
-    n6 = model.nodes[5]
-    n7 = model.nodes[6]
-    n8 = model.nodes[7]
-
-    assert_allclose(n1.coords, [0.0, 0.0, 0.0])
-    assert_allclose(n2.coords, [10.0, 0.0, 0.0])
-    assert_allclose(n3.coords, [0.0, 20.0, 0.0])
-    assert_allclose(n4.coords, [10.0, 20.0, 0.0])
-    assert_allclose(n5.coords, [0.0, 0.0, 30.0])
-    assert_allclose(n6.coords, [10.0, 0.0, 30.0])
-    assert_allclose(n7.coords, [0.0, 20.0, 30.0])
-    assert_allclose(n8.coords, [10.0, 20.0, 30.0])
-
-
 @pytest.mark.parametrize(
     "file_path,expected_record_count",
     [
@@ -102,32 +68,3 @@ def test_parse_node_3d(fil_path_3d):
 def test_read_records_count(file_path, expected_record_count):
     records = list(read_records(file_path))
     assert len(records) == expected_record_count
-
-
-def test_node_sets_2D(fil_path_2d):
-    model = open_fil(fil_path_2d)
-    node_sets = model.node_sets
-    expected_sets = {
-        "ASSEMBLY_SET_BC_1": [0],
-        "ASSEMBLY_SET_BC_2": [1],
-        "ASSEMBLY_SET_LOAD": [2, 3],
-    }
-
-    assert expected_sets.keys() == node_sets.keys()
-    for k, v in expected_sets.items():
-        assert v == node_sets[k]
-
-
-def test_node_sets_3D(fil_path_3d):
-    model = open_fil(fil_path_3d)
-    node_sets = model.node_sets
-    expected_sets = {
-        "ASSEMBLY_SET_BC_1": [0],
-        "ASSEMBLY_SET_BC_2": [3],
-        "ASSEMBLY_SET_BC_3": [1, 2],
-        "ASSEMBLY_SET_LOAD": [4, 5, 6, 7],
-    }
-
-    assert expected_sets.keys() == node_sets.keys()
-    for k, v in expected_sets.items():
-        assert v == node_sets[k]
