@@ -73,12 +73,17 @@ class Model:
 
     def add_set(
         self, name: str, elements: list[int], s_type: Literal["element", "node"]
-    ):
+    ) -> list[int]:
         """Add an element set.
 
         Parameters
         ----------
-        name : TODO
+        name : str
+            Name of the set.
+        elements : list[int]
+            The indices of the elements composing the set.
+        s_type : str
+            The type of set: either `element` or `node`.
 
         Returns
         -------
@@ -307,7 +312,11 @@ class Model:
         inc : int
             Number of the increment.
         node_set : str, list
+            Name of the nodal set.
         elem_set : str, list
+            Name of the element set.
+        node_idx : list[int]
+            List of node indices to get results from.
 
         Returns
         -------
