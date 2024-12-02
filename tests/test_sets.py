@@ -4,6 +4,16 @@ from numpy.testing import assert_allclose
 from pybaqus.reader import open_fil
 
 
+@pytest.fixture
+def fil_path_2d():
+    return "tests/abaqus/fil/quad_CPE4.fil"
+
+
+@pytest.fixture
+def fil_path_3d():
+    return "tests/abaqus/fil/hex_C3D8.fil"
+
+
 def test_node_sets_2D(fil_path_2d):
     model = open_fil(fil_path_2d)
     node_sets = model.node_sets
