@@ -64,7 +64,7 @@ set_bc_2, 2, 2
 ** 
 ** Name: test-load   Type: Concentrated force
 *Cload
-set_load, 2, 1e03
+set_load, 2, 1
 ** 
 ** OUTPUT REQUESTS
 ** 
