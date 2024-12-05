@@ -650,6 +650,7 @@ ELEMENTS = {
     "R2D2": LineElement,
     "R3D3": Triangle,
     "R3D4": Quad,
+    "RB3D2": LineElement,
     # Truss elements
     "T2D2": LineElement,
     "T2D2H": LineElement,
@@ -705,6 +706,7 @@ N_INT_PNTS = {
     "R2D2": 0,
     "R3D3": 0,
     "R3D4": 0,
+    "RB3D2": 0,
     # Truss elements
     "T2D2": 1,
     "T2D2H": 1,
