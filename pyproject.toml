@@ -1,6 +1,6 @@
 [project]
 name = "pybaqus"
-version = "0.2.10"
+version = "0.2.11"
 description = "A Python library for the visualization and post-processing of Abaqus ASCII result files"
 readme = "README.md"
 authors = [
