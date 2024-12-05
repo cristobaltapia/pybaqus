@@ -1,7 +1,7 @@
 [project]
 name = "pybaqus"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.10"
+description = "A Python library for the visualization and post-processing of Abaqus ASCII result files"
 readme = "README.md"
 authors = [
     { name = "Cristóbal Tapia Camú", email = "crtapia@gmail.com" } 
