@@ -85,7 +85,7 @@ We can plot some of our results like this:
 ```python
 mesh = res.get_deformed_mesh(step=1, inc=1, scale=3)
 s2 = res.get_nodal_result(var="S2", step=1, inc=1)
-mesh.point_arrays["S2"] = s2
+mesh.point_data["S2"] = s2
 
 plot = pv.Plotter()
 plot.add_mesh(mesh, show_edges=True, color="white",
