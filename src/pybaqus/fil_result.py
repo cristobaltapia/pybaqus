@@ -95,9 +95,9 @@ class FilParser:
         records = self._records
 
         pattern = re.compile(
-            r"[ADEI](?: \d(\d+)|"  # ints
-            + r"((?: |-)\d+\.\d+(?:E|D)(?:\+|-)\d+)|"  # floats
-            + r"(.{8}))"  # strings
+            r"(?:I(?: \d(\d+))|"  # ints with I prefix
+            + r"[ED]((?: |-)\d+\.\d+(?:E|D)(?:\+|-)\d+)|"  # floats with E/D prefix
+            + r"A(.{8}))"  # strings with A prefix
         )
 
         # Parse each record
