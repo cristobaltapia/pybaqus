@@ -648,6 +648,7 @@ ELEMENTS = {
     "IDCOUP3R": DistributedCouplingElement,
     # Rigid
     "R2D2": LineElement,
+    "RB2D2": LineElement,
     "R3D3": Triangle,
     "R3D4": Quad,
     "RB3D2": LineElement,
@@ -704,6 +705,7 @@ N_INT_PNTS = {
     "IDCOUP3R": 0,
     # Rigid
     "R2D2": 0,
+    "RB2D2": 0,
     "R3D3": 0,
     "R3D4": 0,
     "RB3D2": 0,
