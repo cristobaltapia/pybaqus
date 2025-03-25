@@ -34,7 +34,7 @@ class Model:
 
     def __init__(self):
         self.nodes: NDArray = None
-        self.elements: dict[int, Element] = dict()
+        self.elements: NDArray = None
         self.element_sets: dict = dict()
         self.node_sets: dict = dict()
         self.surfaces: dict = dict()
@@ -280,6 +280,7 @@ class Model:
 
     @size.setter
     def size(self, ne):
+        self.elements = np.empty(shape=(ne[0]), dtype=Element)
         self.nodes = np.empty(shape=(ne[1]), dtype=Node)
         self._n_elements = ne[0]
         self._n_nodes = ne[1]
