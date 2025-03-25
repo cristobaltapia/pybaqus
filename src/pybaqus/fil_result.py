@@ -337,7 +337,9 @@ class FilParser:
 
         # Keep track of the current node
         self._curr_node: int = 0
+        self._curr_elem: int = 0
         self._node_map: dict[int, int] = dict()
+        self._elem_map: dict[int, int] = dict()
         self._curr_set: list = []
         self._tmp_sets: dict = {"element": dict(), "node": dict()}
         self._label_cross_ref: dict = dict()
@@ -385,6 +387,7 @@ class FilParser:
         self._reference_elems_in_nodes()
         self._map_node_indices_to_elements()
         self._map_node_indices_to_node_sets()
+        self._map_element_indices_to_element_sets()
         self.model.post_import_actions()
 
     def _convert_record(self, record):
@@ -412,6 +415,7 @@ class FilParser:
         e_number = record[2]
         nodes = record[4:]
 
+        self._elem_map[e_number] = self._curr_elem
         # Add a reference to the node poinitng at the element
         for n in nodes:
             if n in self._node_elems.keys():
@@ -424,9 +428,10 @@ class FilParser:
             _log.warning(f"Element type {e_type} not supported yet. Skipping.")
             return
 
-        element = ElementClass(*nodes, num=e_number, model=self.model, code=e_type)
+        element = ElementClass(*nodes, num=self._curr_elem, model=self.model, code=e_type)
         element.n_integ_points = N_INT_PNTS[e_type]
         self.model.add_element(element)
+        self._curr_elem += 1
 
     def _parse_node(self, record):
         """Parse the data of a node
@@ -554,7 +559,7 @@ class FilParser:
 
         # Append the element/node number to the list of elements/nodes which
         # data is going to be read next
-        self._curr_elem_out = num
+        self._curr_elem_out = self._elem_map[num]
         self._curr_n_int_point = n_int_point
         self._curr_loc_id = loc_id
         self._curr_int_point_data = dict()
@@ -638,7 +643,7 @@ class FilParser:
         record : TODO
 
         """
-        self._curr_output_node = record[2]
+        self._curr_output_node = self._node_map[record[2]]
         self._no_of_components = record[3]
 
     def _parse_output_request(self, record):
@@ -906,6 +911,7 @@ class FilParser:
         elen = record[8]
 
         self.model.add_release_info(release, date, time)
+        # Set the size of the model (nr. of elements and nodes)
         self.model.size = (record[6], record[7])
         self.model.elen = elen
 
@@ -934,10 +940,15 @@ class FilParser:
 
     def _map_node_indices_to_elements(self):
         """Map the new node indices to the elements."""
-        for _, e in self.model.elements.items():
+        for e in self.model.elements:
             e._nodes = [self._node_map[n] for n in e._nodes]
 
     def _map_node_indices_to_node_sets(self):
         """Map the new node indices to the node sets."""
-        for k, e in self.model.node_sets.items():
-            self.model.node_sets[k] = [self._node_map[n] for n in e]
+        for k, s in self.model.node_sets.items():
+            self.model.node_sets[k] = [self._node_map[n] for n in s]
+
+    def _map_element_indices_to_element_sets(self):
+        """Map the new element indices to the element sets."""
+        for k, s in self.model.element_sets.items():
+            self.model.element_sets[k] = [self._elem_map[e] for e in s]

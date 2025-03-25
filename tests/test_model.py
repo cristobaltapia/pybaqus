@@ -17,7 +17,7 @@ def empty_model():
 def test_model_initialization(empty_model):
     assert isinstance(empty_model, Model)
     assert empty_model.nodes == None
-    assert len(empty_model.elements) == 0
+    assert empty_model.elements == None
     assert len(empty_model.element_sets) == 0
     assert len(empty_model.node_sets) == 0
     assert len(empty_model.surfaces) == 0
@@ -40,10 +40,11 @@ def test_add_element(empty_model):
         def __init__(self, num):
             self.num = num
 
-    element = MockElement(1)
+    element = MockElement(0)
+    empty_model.size = (1, 1)
     empty_model.add_element(element)
     assert len(empty_model.elements) == 1
-    assert empty_model.elements[1] == element
+    assert empty_model.elements[0] == element
 
 
 def test_add_set(empty_model):
