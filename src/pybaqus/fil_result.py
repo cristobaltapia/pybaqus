@@ -2,6 +2,7 @@
 Class for the Fil results
 """
 import re
+import logging
 
 import numpy as np
 from tqdm import tqdm
@@ -9,6 +10,8 @@ from tqdm import tqdm
 from .model import Model
 from .nodes import Node2D, Node3D
 from .elements import ELEMENTS, N_INT_PNTS
+
+_log = logging.getLogger(__name__)
 
 
 class FilParser:
@@ -153,8 +156,11 @@ class FilParser:
                 self._node_elems[n].append(e_number)
             else:
                 self._node_elems[n] = [e_number]
-
-        ElementClass = ELEMENTS[e_type]
+        if e_type in ELEMENTS.keys():
+            ElementClass = ELEMENTS[e_type]
+        else:
+            _log.warning(f"Element type {e_type} not supported yet. Skipping.")
+            return
 
         element = ElementClass(*nodes, num=e_number, model=self.model, code=e_type)
         element.n_integ_points = N_INT_PNTS[e_type]
