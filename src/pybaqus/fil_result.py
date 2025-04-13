@@ -940,8 +940,8 @@ class FilParser:
 
     def _map_node_indices_to_elements(self):
         """Map the new node indices to the elements."""
-        for e in self.model.elements:
-            e._nodes = [self._node_map[n] for n in e._nodes]
+        for k, e in enumerate(self.model.elements):
+            self.model.elements[k]._nodes = [self._node_map[n] for n in e._nodes]
 
     def _map_node_indices_to_node_sets(self):
         """Map the new node indices to the node sets."""

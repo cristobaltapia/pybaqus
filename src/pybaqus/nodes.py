@@ -8,14 +8,23 @@ import numpy as np
 class Node:
     """Define a node in the finite element model.
 
-    Parameters
+    Attributes
     ----------
     x : float
     y : float
     z : float
     num : float
+    in_elements : list[int]
+        List of elements that use this node.
 
     """
+
+    _x: float
+    _y: float
+    _z: float
+    _rx: float
+    _ry: float
+    _rz: float
 
     def __init__(self, num: int, model):
         self._num: int = num
@@ -83,10 +92,6 @@ class Node2D(Node):
 
     """
 
-    _x: float
-    _y: float
-    _rz: float
-
     def __init__(self, num: int, dof_map, model, *dof):
         super().__init__(num, model)
 
@@ -114,13 +119,6 @@ class Node3D(Node):
         The values for all degree of freedom.
 
     """
-
-    _x: float
-    _y: float
-    _z: float
-    _rx: float
-    _ry: float
-    _rz: float
 
     def __init__(self, num, dof_map, model, *dof):
         super().__init__(num, model)

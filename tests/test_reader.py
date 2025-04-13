@@ -57,6 +57,11 @@ def test_model_size(fil_path_2d):
 def test_discontinuous_nodes():
     model = open_fil("tests/abaqus/fil/discontinuous_numbering_2D.fil")
     assert model.size["nodes"] == len(model.nodes)
+    # Check the correct numbering of the elements
+    nodes1 = model.elements[0]._nodes
+    nodes2 = model.elements[1]._nodes
+    assert nodes1 == [0, 1, 3, 2]
+    assert nodes2 == [1, 4, 5, 3]
 
 
 @pytest.mark.parametrize(
