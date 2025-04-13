@@ -16,8 +16,6 @@ def empty_model():
 
 def test_model_initialization(empty_model):
     assert isinstance(empty_model, Model)
-    assert empty_model.nodes == None
-    assert empty_model.elements == None
     assert len(empty_model.element_sets) == 0
     assert len(empty_model.node_sets) == 0
     assert len(empty_model.surfaces) == 0

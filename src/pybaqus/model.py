@@ -2,16 +2,40 @@
 Definitions of classes that define the imported model
 """
 
-from typing import Literal, Optional
+from typing import Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
 from numpy.typing import NDArray
 from pyvista import UnstructuredGrid
+from typing_extensions import Protocol
 
 from .elements import N_INT_PNTS, Element
 from .faces import DeformableSurface, Face, RigidSurface
 from .nodes import Node
 from .step import Step
+
+T = TypeVar("T")
+
+
+class GenericArray(Generic[T]):
+    """Generic wrapper for numpy arrays containing custom objects."""
+
+    def __init__(self, array: np.ndarray):
+        self.array = array
+
+    def __getitem__(self, key: Union[int, slice]) -> T:
+        return self.array[key]
+
+    def __setitem__(self, key: Union[int, slice], value: T) -> None:
+        self.array[key] = value
+
+    def __len__(self) -> int:
+        return len(self.array)
+
+
+# Type alias for array of Node objects
+NodeArray = GenericArray[Node]
+ElementArray = GenericArray[Element]
 
 
 class Model:
@@ -33,23 +57,23 @@ class Model:
     _elen: float  # typical element length of the model
 
     def __init__(self):
-        self.nodes: NDArray = None
-        self.elements: NDArray = None
-        self.element_sets: dict = dict()
-        self.node_sets: dict = dict()
-        self.surfaces: dict = dict()
-        self.results: dict = dict()
-        self.contact_pairs: list = list()
-        self.metadata: dict = dict()
-        self.mesh = None
-        self.elem_output: dict = dict()
-        self.nodal_output: dict = dict()
-        self.local_csys: dict = dict()
-        self.steps: dict = dict()
-        self._curr_out_step: int = None
-        self._curr_incr: int = None
-        self._dimension: int = None
-        self._status: int = None
+        self.nodes: NodeArray = NodeArray(np.empty(0, dtype=object))
+        self.elements: ElementArray = ElementArray(np.empty(0, dtype=object))
+        self.element_sets: dict[str, list[int]] = {}
+        self.node_sets: dict[str, list[int]] = {}
+        self.surfaces: dict[str, Union[DeformableSurface, RigidSurface]] = {}
+        self.results: dict = {}
+        self.contact_pairs: list[dict[str, str]] = []
+        self.metadata: dict[str, Any] = {}
+        self.mesh: Optional[UnstructuredGrid] = None
+        self.elem_output: dict[int, dict[int, dict[str, Any]]] = {}
+        self.nodal_output: dict[int, dict[int, dict[str, Any]]] = {}
+        self.local_csys: dict[int, dict[int, dict[int, NDArray]]] = {}
+        self.steps: dict[int, Step] = {}
+        self._curr_out_step: Optional[int] = None
+        self._curr_incr: Optional[int] = None
+        self._dimension: Optional[int] = None
+        self._status: Optional[int] = None
 
     def set_status(self, n):
         """Set the  SDV number controling the element deletion
@@ -155,26 +179,35 @@ class Model:
         face = Face(element, face_info["face"], face_info["nodes"])
         self.surfaces[surface].add_face(face)
 
-    def add_elem_output(self, elem, var, data, step, inc, intpnt):
+    def add_elem_output(
+        self, elem: int, var: str, data: float, step: int, inc: int, intpnt: int
+    ):
         """Add element output data
 
         Parameters
         ----------
-        var : TODO
-        data : TODO
+        elem : int
+            Index of the element.
+        var : str
+            The label of the output variable.
+        data : float
+            The result corresponding to the current integration point of the element.
+        step : int
+            Step number.
+        inc : int
+            Increment number.
         intpnt : int
             Integration point number if the results contain integration point data.
             TODO: handle elements with different outputs.
 
-        Returns
-        -------
-        TODO
-
         """
         if var not in self.elem_output[step][inc]:
-            self.elem_output[step][inc][var] = dict()
-
-        if elem not in self.elem_output[step][inc][var]:
+            self.elem_output[step][inc][var] = np.empty(
+                shape=(self._n_elements), dtype=object
+            )
+        # Create an empty array for each element. This happens when the first
+        # integration point is detected.
+        if intpnt == 1:
             etype = self.elements[elem].elem_code
             self.elem_output[step][inc][var][elem] = np.empty(
                 (N_INT_PNTS[etype], 1), dtype=float
@@ -199,7 +232,9 @@ class Model:
         curr_inc = self._curr_incr
 
         if var not in self.nodal_output[curr_step][curr_inc]:
-            self.nodal_output[curr_step][curr_inc][var] = dict()
+            self.nodal_output[curr_step][curr_inc][var] = np.full(
+                shape=self._n_nodes, fill_value=np.nan, dtype=float
+            )
 
         self.nodal_output[step][inc][var][node] = data
 
@@ -279,9 +314,9 @@ class Model:
         return {"elements": self._n_elements, "nodes": self._n_nodes}
 
     @size.setter
-    def size(self, ne):
-        self.elements = np.empty(shape=(ne[0]), dtype=Element)
-        self.nodes = np.empty(shape=(ne[1]), dtype=Node)
+    def size(self, ne: tuple[int, int]) -> None:
+        self.elements = ElementArray(np.empty(shape=(ne[0]), dtype=object))
+        self.nodes = NodeArray(np.empty(shape=(ne[1]), dtype=object))
         self._n_elements = ne[0]
         self._n_nodes = ne[1]
 
@@ -300,7 +335,7 @@ class Model:
         inc: int,
         node_set: Optional[str | list[str]] = None,
         elem_set: Optional[str | list[str]] = None,
-        node_idx: list[int] = [],
+        node_idx: Optional[list[int]] = None,
     ):
         """Get nodal results
 
@@ -324,39 +359,37 @@ class Model:
         TODO
 
         """
-        # Get the keys of the nodes in the set of nodes
-        if node_set in self.node_sets:
+        # FIXME: make parameters node_set, elem_set and node_idx exclusive
+
+        # Get the indices of the nodes and elements in the node set
+        if node_set is not None:
             node_idx = self.node_sets[node_set]
             elem_idx = self.get_elems_from_nodes(node_idx)
-        # Get elements belonging to the set
-        elif elem_set in self.element_sets:
+        # Get the indices of the nodes and elements in the element set
+        elif elem_set is not None:
             elem_idx = self.get_elems_from_set(elem_set)
-            node_idx = sorted(self.get_nodes_from_elems(elem_idx))
-        elif len(node_idx) > 0:
+            node_idx = self.get_nodes_from_elems(elem_idx)
+        # Get the indices of the elements belonging to the node indices
+        elif node_idx is not None:
             elem_idx = self.get_elems_from_nodes(node_idx)
-            node_idx = sorted(node_idx)
         else:
-            node_idx = [n.id for n in self.nodes]
-            try:
-                elem_idx = self.elem_output[step][inc][var].keys()
-            except KeyError:
-                print(
-                    f"Requested output variable {var} not present as element result of the model."
-                )
+            # All nodes
+            node_idx = list(range(self._n_nodes))
+            elem_idx = list(range(self._n_elements))
 
         if var in self.nodal_output[step][inc]:
-            results = self.nodal_output[step][inc][var]
+            results = self.nodal_output[step][inc][var][sorted(node_idx)]
         elif var in self.elem_output[step][inc]:
-            results = self._nodal_result_from_elements(var, step, inc, elem_idx)
+            results = self._nodal_result_from_elements(var, step, inc, sorted(elem_idx))
         else:
             # FIXME: handle errors properly some day
             print("Variable not present")
 
-        list_res = [results[k] for k in node_idx]
+        return results
 
-        return np.asarray(list_res)
-
-    def _nodal_result_from_elements(self, var, step, inc, elem_ids):
+    def _nodal_result_from_elements(
+        self, var: str, step: int, inc: int, elem_ids: list[int]
+    ):
         """Get nodal results from element results by extrapolating.
 
         Shape functions are used to extrapolate to the nodes.
@@ -369,35 +402,35 @@ class Model:
             Step
         inc : int
             Increment
+        elem_ids : list[int]
+            The indices for the elements.
 
         Returns
         -------
         array
 
         """
-        keys_out = elem_ids
         output = self.elem_output[step][inc][var]
 
         elements = self.elements
 
-        # FIXME: there are some hacky things here. Try to fix that
-        nodes = self.nodes
-        res_nodes = np.zeros(len(nodes))
-        counter = np.zeros(len(nodes))
+        node_ids = self.get_nodes_from_elems(elem_ids)
+        res_nodes = np.zeros(len(node_ids))
+        counter = np.zeros(len(node_ids))
+        # Map node indices to array containing the subset corresponding to the
+        # elements selected
+        n_map = np.empty(self._n_nodes, dtype=int)
+        n_map[node_ids] = list(range(len(node_ids)))
 
-        for ix in keys_out:
+        for ix in elem_ids:
             var_i = output[ix]
             # Returns extrapolated variables and respective node labels
-            nodal_i, elem_nodes = elements[ix].extrapolate_to_nodes(var_i)
-            res_nodes[elem_nodes] += nodal_i.flatten()
-            counter[elem_nodes] += 1
-
-        # FIXME: Another hacky fix
-        counter[counter == 0] = np.nan
+            nodal_i, e_nodes = elements[ix].extrapolate_to_nodes(var_i)
+            res_nodes[n_map[e_nodes]] += nodal_i.flatten()
+            counter[n_map[e_nodes]] += 1
 
         result = res_nodes / counter
 
-        # FIXME: output correct size
         return result
 
     def get_local_csys(self, direction, step, inc, elem_set=None):
@@ -427,33 +460,32 @@ class Model:
         else:
             dim = 2
 
-        # FIXME: have this variable sorted globally
-        keys = sorted(list(self.elements.keys()))
+        idx = self.elements
 
         # Elements for which the output variable exists
-        keys_out = set(self.local_csys[step][inc].keys())
+        elem_out = set(self.local_csys[step][inc].keys())
 
         # Consider "deleted" elements (i.e. elements that have a 100% of damage according
         # to the used fracture model)
         if self._status is not None:
             status = self.elem_output[step][inc][f"SDV{self._status}"]
             del_elem = [k for k, v in status.items() if v[0] == 0]
-            keys_out = [k for k in keys_out if k not in del_elem]
-            keys = [k for k in keys if k not in del_elem]
+            elem_out = [k for k in elem_out if k not in del_elem]
+            idx = [k for k in idx if k not in del_elem]
 
         if elem_set is not None:
-            keys_out, keys = self._map_elem_set_ids_to_output(elem_set, keys, keys_out)
+            elem_out, idx = self._map_elem_set_ids_to_output(elem_set, idx, elem_out)
 
         csys = self.local_csys[step][inc]
 
         nan_vec = np.ones(self._dimension) * np.nan
 
-        list_res = [csys[k][dim, :] if k in keys_out else nan_vec for k in keys]
+        list_res = [csys[k][dim, :] if k in elem_out else nan_vec for k in idx]
 
         return np.vstack(list_res)
 
     def _map_elem_set_ids_to_output(self, elem_set, id_elem, id_elem_out):
-        """Get the keys of the elements in the element set mapped to the output array.
+        """Get the indices of the elements in the element set mapped to the output array.
 
         Parameters
         ----------
@@ -926,7 +958,7 @@ class Model:
         """Execute some functions after importing all the records into the model."""
         pass
 
-    def get_elems_from_set(self, elem_set):
+    def get_elems_from_set(self, elem_set: str | list) -> list[int]:
         """Get the element IDs belonging to an element set.
 
         Parameters
@@ -948,9 +980,9 @@ class Model:
             for set_i in elem_set:
                 elem_ids += self.element_sets[set_i]
 
-        return set(elem_ids)
+        return list(set(elem_ids))
 
-    def get_nodes_from_elems(self, elems):
+    def get_nodes_from_elems(self, elems: list[int]) -> list[int]:
         """Get nodal IDs from a list of element IDs.
 
         Parameters
@@ -967,13 +999,11 @@ class Model:
         # Initialize list to store all the nodes
         nodes = list()
 
-        for el in elems:
-            nodes += elements[el]._nodes
+        for e in elems:
+            nodes += elements[e]._nodes
 
         # Remove duplicates
-        nodes_ar = np.sort(np.asarray(nodes, dtype=int))
-
-        return np.unique(nodes_ar)
+        return sorted(list(set(nodes)))
 
     def get_nodes_from_set(self, node_set):
         """Get node IDs belonging to the node set.
@@ -997,7 +1027,7 @@ class Model:
 
         return node_ids
 
-    def get_elems_from_nodes(self, node_ids):
+    def get_elems_from_nodes(self, node_ids: list[int]):
         """Get element IDs from a set of nodes.
 
         Parameters
