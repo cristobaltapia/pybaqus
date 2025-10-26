@@ -45,6 +45,7 @@ def test_add_element(empty_model):
     assert empty_model.elements[0] == element
 
 
+
 def test_add_set(empty_model):
     elements = [1, 2, 3]
     result = empty_model.add_set("test_set", elements, "element")
