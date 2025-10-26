@@ -92,6 +92,10 @@ class Node2D(Node):
 
     """
 
+    _x: float
+    _y: float
+    _rz: float
+
     def __init__(self, num: int, dof_map, model, *dof):
         super().__init__(num, model)
 
@@ -119,6 +123,13 @@ class Node3D(Node):
         The values for all degree of freedom.
 
     """
+
+    _x: float
+    _y: float
+    _z: float
+    _rx: float
+    _ry: float
+    _rz: float
 
     def __init__(self, num, dof_map, model, *dof):
         super().__init__(num, model)
