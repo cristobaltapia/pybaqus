@@ -105,3 +105,7 @@ Have fun!
 [1]: https://www.3ds.com/products-services/simulia/products/abaqus/
 [2]: https://vtk.org/
 [3]: https://www.pyvista.org/
+
+# Acknowledgments
+
+This project has benefited from funding from the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy – EXC 2120/1 – 390831618 [IntCDC](https://www.intcdc.uni-stuttgart.de)
