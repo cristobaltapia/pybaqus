@@ -12,6 +12,12 @@ from .faces import DeformableSurface, Face, RigidSurface
 from .nodes import Node
 from .step import Step
 
+def is_float(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
 
 class Model:
     """Class for the model.
@@ -173,6 +179,15 @@ class Model:
             self.elem_output[step][inc][var][elem] = np.empty(
                 (N_INT_PNTS[etype], 1), dtype=float
             )
+
+        if not is_float(data):
+            data_upper=data.strip().upper()
+            if data_upper=='YES' :
+                data=1
+            elif data_upper=='NO' :
+                data=0
+            else :
+                data=0
 
         self.elem_output[step][inc][var][elem][intpnt - 1] = data
 
@@ -718,7 +733,7 @@ class Model:
 
         return coords
 
-    def get_cells(self, elem_set=None, status=None):
+    def get_cells(self, elem_set=None, status=None, return_map=False):
         """Get the definition of cells for all elements.
 
         The format is the one required by VTK.
@@ -762,19 +777,25 @@ class Model:
             # Map new indices to old indices. kmap must be according with get_node_coords
             kmap = {ix: k for k, ix in zip(new_node_ids, node_ids)}
 
-        keys = sorted(list(elements.keys()))
+        old_keys = sorted(list(elements.keys()))
 
         cells = list()
         elem_type = list()
 
-        for el_i in keys:
+        for el_i in old_keys:
             cells.extend(elements[el_i].get_cell(kmap=kmap))
             elem_type.append(elements[el_i]._elem_type)
 
         ar_cells = np.asarray(cells)
         ar_elem_type = np.asarray(elem_type, np.int8)
 
-        return ar_cells, ar_elem_type
+        if return_map:
+            keys = np.arange(1, len(old_keys) + 1, 1)
+            # Map new indices to old indices
+            kmap = {k: ix for k, ix in zip(keys, old_keys)}
+            return ar_cells, ar_elem_type, kmap
+        else:
+            return ar_cells, ar_elem_type
 
     def get_mesh(self, elem_set=None):
         """Construct the mesh of the finite element model
