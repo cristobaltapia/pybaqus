@@ -2,15 +2,17 @@
 Class for the Fil results
 see ABAQUS Analysis User's Manual. FILE OUTPUT FORMAT (ANALYSIS_1.pdf)
 """
-import re
+
 import logging
+import re
 
 import numpy as np
+from numpy.typing import NDArray
 from tqdm import tqdm
 
+from .elements import ELEMENTS, N_INT_PNTS
 from .model import Model
 from .nodes import Node2D, Node3D
-from .elements import ELEMENTS, N_INT_PNTS
 
 _log = logging.getLogger(__name__)
 
@@ -330,7 +332,7 @@ class FilParser:
         self._curr_output_node: int = None
         self._output_request_set: str = None
         self._output_elem_type: str = None
-        self._dof_map: dict = dict()
+        self._dof_map: NDArray = np.array([])
         self._model_dimension: int = None
         self._node_records: list = list()
 
@@ -355,8 +357,13 @@ class FilParser:
         )
 
         # Parse each record
-        for r_i in tqdm(records, disable=(not progress), leave=False, unit="record",
-                        dynamic_ncols=True):
+        for r_i in tqdm(
+            records,
+            disable=(not progress),
+            leave=False,
+            unit="record",
+            dynamic_ncols=True,
+        ):
             m_rec = pattern.findall(r_i)
 
             # Get each variable
@@ -430,13 +437,13 @@ class FilParser:
             self._node_records.append(record)
         else:
             n_number = record[2]
-            dofs = record[3:]
+            coords = record[3:]
             dof_map = self._dof_map
 
             if self._model_dimension == 2:
-                node = Node2D(n_number, dof_map, self.model, *dofs)
+                node = Node2D(n_number, dof_map, self.model, *coords)
             else:
-                node = Node3D(n_number, dof_map, self.model, *dofs)
+                node = Node3D(n_number, dof_map, self.model, *coords)
 
             self.model.add_node(node)
 
@@ -491,7 +498,9 @@ class FilParser:
 
             # Append all the records
             for ix, data in enumerate(record[2:], start=1):
-                self.model.add_elem_output(n_elem, f"{var}{ix}", data, step, inc, int_point)
+                self.model.add_elem_output(
+                    n_elem, f"{var}{ix}", data, step, inc, int_point
+                )
 
         elif flag_out == 1:
             n_node = self._curr_elem_out
@@ -561,11 +570,13 @@ class FilParser:
 
         if len(record) > 2:
             for ix, r_i in enumerate(record[3:], start=1):
-                self.model.add_nodal_output(node=record[2], var=f"{var}{ix}", data=r_i,
-                                            step=step, inc=inc)
+                self.model.add_nodal_output(
+                    node=record[2], var=f"{var}{ix}", data=r_i, step=step, inc=inc
+                )
         else:
-            self.model.add_nodal_output(node=record[0], var=var, data=record[1], step=step,
-                                        inc=inc)
+            self.model.add_nodal_output(
+                node=record[0], var=var, data=record[1], step=step, inc=inc
+            )
 
         return 1
 
@@ -588,8 +599,13 @@ class FilParser:
         node = self._curr_output_node
 
         for ix, comp_i in enumerate(record[2:]):
-            self.model.add_nodal_output(node=node, var=self.CONTACT_OUT[var][ix],
-                                        data=comp_i, step=step, inc=inc)
+            self.model.add_nodal_output(
+                node=node,
+                var=self.CONTACT_OUT[var][ix],
+                data=comp_i,
+                step=step,
+                inc=inc,
+            )
 
     def _parse_contact_output_request(self, record):
         """Parse surfaces and nodes associated to contact pair.
@@ -904,7 +920,7 @@ class FilParser:
         r_type : str
 
         """
-        #tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
+        # tqdm.write(f"Record key {record[1]} ({r_type}) not yet implemented!")
         print(f"Record key {record[1]} ({r_type}) not yet implemented!")
 
     def _reference_elems_in_nodes(self):
