@@ -82,12 +82,12 @@ class Node2D(Node):
     _y: float
     _rz: float
 
-    def __init__(self, num: int, dof_map, model, *dof):
+    def __init__(self, num: int, dof_map, model, *coords):
         super().__init__(num, model)
 
-        self._x = dof[dof_map[0] - 1]
-        self._y = dof[dof_map[1] - 1]
-        self._rz = dof[dof_map[5] - 1] if dof_map[5] > 0 else np.nan
+        self._x = coords[dof_map[0] - 1]
+        self._y = coords[dof_map[1] - 1]
+        self._rz = 0.0 if dof_map[5] > 0 else np.nan
         self._num = num
 
     def _get_coords(self):
@@ -116,15 +116,15 @@ class Node3D(Node):
     _ry: float
     _rz: float
 
-    def __init__(self, num, dof_map, model, *dof):
+    def __init__(self, num, dof_map, model, *coords):
         super().__init__(num, model)
 
-        self._x = dof[dof_map[0] - 1]
-        self._y = dof[dof_map[1] - 1]
-        self._z = dof[dof_map[2] - 1]
-        self._rx = dof[dof_map[3] - 1] if dof_map[3] > 0 else np.nan
-        self._ry = dof[dof_map[4] - 1] if dof_map[4] > 0 else np.nan
-        self._rz = dof[dof_map[5] - 1] if dof_map[5] > 0 else np.nan
+        self._x = coords[dof_map[0] - 1]
+        self._y = coords[dof_map[1] - 1]
+        self._z = coords[dof_map[2] - 1]
+        self._rx = 0.0 if dof_map[3] > 0 else np.nan
+        self._ry = 0.0 if dof_map[4] > 0 else np.nan
+        self._rz = 0.0 if dof_map[5] > 0 else np.nan
         self._num = num
 
     def _get_coords(self):
